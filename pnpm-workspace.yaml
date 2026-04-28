@@ -2,3 +2,9 @@
 # Reserved for splitting agents/parsers into separate packages in later phases.
 packages:
   - .
+
+# Next.js 16 + pnpm 10: required to suppress install warnings for native deps.
+# sharp = image optimization, unrs-resolver = module resolver.
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver

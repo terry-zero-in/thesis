@@ -129,8 +129,8 @@ Body base is 14px / line-height 1.5. `-webkit-font-smoothing: antialiased` is on
 - Border-right `--border-subtle`
 - Padding `16px 8px`, gap `2px` between nav items
 - **Sections** (uppercase 11px label, padding `12px 10px 6px`, color `--text-3`, weight 500, tracking 0.06em):
-  - **WORK:** Dashboard, Research, Memos, Triggers, Decisions, Portfolio
-  - **SYSTEM:** Workflow, Settings
+  - **WORK:** Dashboard, Watchlist, Research Queue, Triggers, Opportunities, Memos, Decisions, Portfolio
+  - **SYSTEM:** Workflows, Settings
 - **Nav item:** padding `6px 10px`, radius 5px, 13px text in `--text-2`, 14px icon `opacity 0.8`, gap 10px, transition 0.12s
 - **Hover:** bg `--surface`, color `--text-1`
 - **Active:** bg `--surface`, color `--text-1`, plus a 2px x 16px accent (`--accent`) bar at `left: -8px`, radius `0 2px 2px 0`

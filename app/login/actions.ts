@@ -33,7 +33,10 @@ export async function signInWithMagicLink(
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${origin}/auth/callback?next=/dashboard` },
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?next=/dashboard`,
+      shouldCreateUser: false,
+    },
   });
 
   if (error) {

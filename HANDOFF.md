@@ -1,8 +1,8 @@
 # Thesis — Session Handoff
 
 **Session date:** 2026-04-28 (continued)
-**Closing Claude:** Code #206_04.28.2026 (10-042826), row `48fb06c3-1df6-4b56-a0ee-4334866023d9`
-**Status at close:** THS-3 SHIPPED. PR #3 open against `main`, Linear → In Review. Awaiting Terry's merge.
+**Closing Claude:** Code #209_04.28.2026 (14-042826), row `42827e19-24d9-46ee-b820-2a90be82a7b3`
+**Status at close:** THS-3 ✅ MERGED at `fe4cdf3` on `main`. THS-4 ✅ SHIPPED — PR #4 open at `283a39e` on `ths-4-shell`. Linear THS-4 → In Review. **Perplexity Checkpoint #1 stops here — do not start THS-5 until Perplexity grades against the blueprint.**
 
 ---
 
@@ -21,18 +21,21 @@
 ## Current repo state
 
 ```
-main branch:    9142315 — THS-2 merged (Supabase schema + RLS, all 23 tables)
+main branch:    fe4cdf3 — THS-3 squash-merged (magic-link auth + proxy.ts + /login + /auth/callback + sign-out)
+                  Includes 2 review-cycle fixes:
+                  +─ aeb69ca — fix(THS-3): use x-forwarded-proto for origin reconstruction (Codex P2)
+                  +─ 9aa1550 — fix(THS-3): disable auto-signup in magic-link sign-in (Codex P1)
 
-ths-3-auth:     49b1221 — feat(THS-3): magic-link auth + protected proxy + sign-in/sign-out
-                          [PUSHED · PR #3 OPEN · LINEAR → IN REVIEW]
-                  +─ proxy.ts at repo root (Next 16, not middleware.ts)
-                  +─ app/login/{page,login-form,actions}.tsx (useActionState form)
-                  +─ app/auth/callback/route.ts (PKCE exchange, allow-listed ?next=)
-                  +─ app/page.tsx (auth-aware redirect)
-                  +─ app/dashboard/page.tsx (getUser defense + sign-out treatment)
-                  +─ lib/auth/actions.ts (signOut server action)
-                  +─ supabase/config.toml (additional_redirect_urls FIX)
-                  +─ HANDOFF gotchas 19+20, inbucket → Mailpit naming sweep
+ths-4-shell:    283a39e — fix(THS-4): wrap CommandDialog children in Command root (Codex P1)
+                  Stack on top of:
+                  +─ a8b9378 — feat(THS-4): app shell — sidebar + topbar + ⌘K palette
+                  [PUSHED · PR #4 OPEN · LINEAR → IN REVIEW]
+                  +─ app/(app)/layout.tsx — server, getUser defense + topbar + sidebar grid
+                  +─ app/(app)/{dashboard,watchlist,research-queue,triggers,opportunities,memos,decisions,portfolio,workflows,settings,tokens}/page.tsx
+                  +─ components/shell/{topbar,sidebar,command-palette,command-palette-trigger,empty-panel,nav-config}
+                  +─ components/ui/{command,dialog,input-group,textarea}.tsx (shadcn add)
+                  +─ DESIGN_SPEC §4.3 refreshed to 10-route nav (was 8 — drift fix in same commit)
+                  +─ HANDOFF gotchas 23 (/login 500 pre-THS-14) + 24 (verification rigor)
 ```
 
 **Stack pinned (current state):**
@@ -55,52 +58,48 @@ tw-animate-css          1.4.0     ✅ THS-3
 lucide-react            1.11.0    ✅ THS-3
 ```
 
-## THE NEXT 3-5 TASKS (execute in order)
+## SESSION-STARTUP SANITY CHECKS (Terry-driven; do NOT auto-assign work)
 
-### 1. Sanity check on session open
+Per Terry's locked rule: handoffs document state, never assign tasks. The next Claude reads this, runs the procedural checks below, then asks Terry what to work on. Do not infer next work from this list.
+
+### 1. State sanity check
 
 ```bash
 cd /Users/terryturner/Projects/thesis
 git fetch --all
-gh pr view 3                          # PR status — open / merged / changes requested
-git status                            # confirm state of working tree + current branch
-git log -3 --oneline                  # confirm head = 49b1221 on ths-3-auth (or merged on main)
+gh pr view 4                          # THS-4 PR state — open / merged / changes requested
+git status                            # working tree + current branch
+git log -3 --oneline --all            # confirm head locations on main + ths-4-shell
 supabase status                       # confirm local Supabase running. If not, supabase start
 ```
 
-Then via Linear MCP confirm THS-3 state. **If `gh pr view 3` shows merged, jump to step 2. If open with no review comments, ask Terry whether to wait for review or proceed to THS-4 prep on a separate branch. If comments exist, address them on `ths-3-auth` before anything else.**
+Then via Linear MCP confirm THS-4 state.
 
-### 2. Post-merge cleanup (only if PR #3 is merged)
+### 2. Address PR #4 review state
 
-```bash
-git checkout main
-git pull origin main                  # main now has THS-3 squash-merge
-git branch -D ths-3-auth              # local cleanup; remote branch GitHub auto-deletes on squash-merge
-```
+- **If PR #4 has new Codex findings:** address them on `ths-4-shell` before anything else.
+- **If PR #4 is approved/clean and Terry says merge:** `gh pr merge 4 --squash --delete-branch`, then `git checkout main && git pull`, mark Linear THS-4 → Done with merged hash, confirm Vercel auto-deploy of `main` at <https://thesis-nu.vercel.app>.
+- **If PR #4 is open with no Codex re-review yet:** check Codex's status — `gh api repos/terry-zero-in/thesis/pulls/4/reviews` — and wait OR ask Terry to merge if he's already accepted the fixes verbally.
 
-Update Linear THS-3 → Done with merged commit hash. Confirm Vercel auto-deploy of main succeeded at <https://thesis-nu.vercel.app> and the magic-link flow works against the deployed instance — the deployed Supabase project doesn't exist yet (deferred to THS-14), so production auth will fail by design until then; deployed `/login` should still render correctly.
+### 3. Functional ⌘K verification (PENDING from Session 209)
 
-### 3. Start THS-4 — Sidebar + topnav + ⌘K
+Terry needs to do (or has done) the 6 keystroke checks against `http://localhost:3000` after auth:
+1. Cmd+K opens palette
+2. Type "memos" → list filters to Memos route
+3. ↓↓ navigates highlight down
+4. Enter routes to /memos
+5. Cmd+K reopens, Esc closes
+6. Cmd+K reopens, type "sign", Enter on Sign Out → /login
 
-```bash
-git checkout -b ths-4-shell
-```
+If any of these failed, that's the first work item — debug at `components/shell/command-palette.tsx` or `components/ui/command.tsx`. Per HANDOFF gotcha #24, never report verification clean from render-only checks.
 
-Move Linear THS-4 → In Progress via MCP.
+### 4. Once THS-4 merges — Perplexity Checkpoint #1
 
-**Read first, before any code:** `docs/design/DESIGN_SPEC.md` sections covering app shell (sidebar, topnav, command palette) — DESIGN_SPEC is the authoritative source. Also re-skim the 4 CleanShot screenshots and 2 HTML mockups in `docs/design/` to lock in the visual target.
+**STOP. Do NOT start THS-5.** Terry runs the THS-4 build through Perplexity for spec compliance grading against `docs/design/DESIGN_SPEC.md` + blueprint Section G. Wait for Perplexity's grade + Terry's go-ahead before THS-5 (Watchlist CRUD).
 
-### 4. Build the app shell layout
+### 5. Ask Terry what's next
 
-`app/(app)/layout.tsx` — wraps protected routes with sidebar + topnav. Server component. Reads user via `supabase.auth.getUser()` (defense-in-depth, even though `proxy.ts` already gates). Move `app/dashboard/page.tsx` and any other authed routes under `app/(app)/`. `/login` and `/auth/callback` stay outside the group so they render without the shell.
-
-Sidebar items per blueprint Section L navigation (watchlist, memos, triggers, decisions, alerts, settings — all stub links for THS-4). Active-state styling per DESIGN_SPEC. Macro strip in topnav (8 tickers: SPX · NDX · RUT · VIX · US10Y · DXY · WTI · GOLD — placeholder values until THS-6 wires real data).
-
-### 5. Build the ⌘K command palette MVP
-
-shadcn primitives: `npx shadcn add command dialog`. Static command list for THS-4 (Open Watchlist, Open Memos, Sign Out, etc.) — wiring real navigation actions, real data deferred to later tickets. Keyboard shortcut: ⌘K opens, ESC closes, ↑↓ navigates, Enter executes. Test: open palette, search, navigate, execute Sign Out → lands on `/login`.
-
-Then commit, push, open PR per the same workflow as THS-3. **THS-4 is Perplexity Checkpoint #1 — STOP after THS-4 merges, do not proceed to THS-5 until Perplexity grades against the blueprint.**
+Per Terry's locked rule (`feedback_no_task_assignment.md`): do not assume the next work. Read this HANDOFF + PROGRESS, run sanity checks, then ask Terry directly.
 
 ---
 
@@ -320,4 +319,4 @@ shadcn 4.5.0 init landed in THS-3 (commit `0fd5152`, now part of `49b1221`). Map
 
 ## Continuation note for Terry to paste to next Claude
 
-> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full context, locked decisions, and your first 5 tasks. THS-1 + THS-2 are merged on `main`. THS-3 is SHIPPED on `ths-3-auth` at `49b1221` — PR #3 (https://github.com/terry-zero-in/thesis/pull/3) is open against main with Linear THS-3 → In Review. Start with task 1 (sanity check `gh pr view 3` to determine state), then either address review feedback OR move to THS-4 prep depending on PR status.**
+> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full context. THS-1 + THS-2 + THS-3 are merged on `main` (`fe4cdf3`). THS-4 is SHIPPED on `ths-4-shell` at `283a39e` — PR #4 (https://github.com/terry-zero-in/thesis/pull/4) is open against main with Linear THS-4 → In Review. Run the SESSION-STARTUP SANITY CHECKS (`gh pr view 4`, `git fetch`, `supabase status`), confirm Codex re-review state, then ASK ME what to work on — do not auto-assign work. THS-4 is Perplexity Checkpoint #1; do not start THS-5 until Perplexity grades and I unblock.**

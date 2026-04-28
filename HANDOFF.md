@@ -116,9 +116,9 @@ After submit, swap the form for a "Check your email" success state in the same c
 - GET `/login` → 200
 - GET `/auth/callback` (no code) → 200 (or 307 to `/login?error=...` is also acceptable)
 
-**Magic-link E2E against local inbucket:**
+**Magic-link E2E against local Mailpit:**
 - POST `/login` with email → form switches to success state
-- Open `http://127.0.0.1:54324`, find the magic-link email, click the link
+- Open `http://127.0.0.1:54324` (Supabase CLI's local mail UI; renamed from inbucket to Mailpit in a recent CLI release — same port, same purpose), find the magic-link email, click the link
 - Lands on `/dashboard` authenticated. Reload — still authenticated.
 - GET `/login` while authed → 307 → `/dashboard`
 
@@ -159,7 +159,7 @@ Linear THS-3 → **In Progress**. Branch `ths-3-auth` exists at `0fd5152` (one W
 - `app/page.tsx` — server component, reads session, redirects to `/dashboard` (authed) or `/login` (unauth). No content render
 - Sign-out server action — calls `supabase.auth.signOut()` then `redirect('/login')`. Wired to a button on `/dashboard` placeholder for testability
 - Middleware redirect-matrix test (5 unauth routes + authed `/login`)
-- End-to-end magic-link flow against local `inbucket` (`http://127.0.0.1:54324`)
+- End-to-end magic-link flow against local Mailpit (`http://127.0.0.1:54324` — formerly inbucket)
 - Sign-out flow test
 - Commit, push, open PR, move Linear → In Review
 
@@ -306,7 +306,7 @@ shadcn 4.5.0 init landed in THS-3. The HANDOFF mapping was applied verbatim to `
 | git | ✅ 2.50.1 | |
 | `gh` CLI | ✅ 2.89.0 | logged into `terry-zero-in`, ssh, `repo` scope |
 | Supabase CLI | ✅ both brew (2.90.0) and npm devDep (2.95.5) | `pnpm.onlyBuiltDependencies` allows the npm postinstall to run |
-| Local Supabase stack | ✅ `supabase start` running | Docker required. Studio at http://127.0.0.1:54323. inbucket (auth emails) at http://127.0.0.1:54324. DB at port 54322 |
+| Local Supabase stack | ✅ `supabase start` running | Docker required. Studio at http://127.0.0.1:54323. Mailpit (auth emails — formerly inbucket, renamed in recent CLI release; same port/purpose) at http://127.0.0.1:54324. DB at port 54322 |
 | Vercel CLI | ✅ 52.0.0 | logged in as `terry-8893`, project linked |
 | Docker Desktop | ✅ 4.71.0 | running |
 | Chromium (headless) | ✅ via `npx playwright install chromium` | binary at `~/Library/Caches/ms-playwright/chromium-1217/...`. NOT MCP-attached (MCP playwright wants Google Chrome at `/Applications/Google Chrome.app/`, which isn't installed). For Claude-driven screenshots, invoke the binary directly with `--headless --screenshot=...` |
@@ -332,6 +332,8 @@ shadcn 4.5.0 init landed in THS-3. The HANDOFF mapping was applied verbatim to `
 16. **shadcn 4.x uses `@base-ui/react`** (Mui's open-source Radix successor) instead of `@radix-ui/react-*`. Generated components import `Button as ButtonPrimitive from "@base-ui/react/button"`. They behave like Radix — same accessibility primitives. Just a different import path.
 17. **shadcn 4.x style picked is `base-nova`** (visible in `components.json`). Components include `dark:` Tailwind variants — site needs `.dark` class on `<html>` for those to fire. Currently we don't apply `.dark` and accept slightly less polished destructive/ghost variants. Revisit if needed.
 18. **MCP Playwright wants Google Chrome** at `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`. Chromium-headless from `npx playwright install chromium` is NOT auto-discovered by the MCP server. For Claude-driven screenshots, use the chromium binary directly via Bash (`--headless --screenshot=...`). Installing real Chrome via brew/DMG would unblock MCP — sudo password required.
+19. **Supabase `additional_redirect_urls` must include the deploy origin with `/**` glob** (e.g. `http://localhost:3000/**`, `https://thesis-nu.vercel.app/**`). Silently falls back to `site_url` with no error logged when missing — magic links land on the wrong path. Re-check on every deploy URL change. Caught during THS-3: original config had only `https://127.0.0.1:3000` (https-only, no path glob), which silently broke the magic-link → `/auth/callback` redirect during E2E testing — fixed in `supabase/config.toml`.
+20. **PKCE > implicit flow for SSR-rendered apps.** `@supabase/ssr` defaults to PKCE. Anyone curl-testing the OTP REST endpoint directly (`POST /auth/v1/otp` without a `code_challenge`) will hit implicit flow — link redirects with tokens in `#hash`, not `?code=`. The hash never reaches the server-side route handler, so it looks like the callback is broken when it's actually the test that's wrong. Always test through the SDK (or the actual form), not the bare REST endpoint.
 
 ## Vercel state (live)
 

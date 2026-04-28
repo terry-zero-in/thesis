@@ -71,7 +71,7 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 - `app/auth/callback/route.ts` doing `exchangeCodeForSession`
 - `app/page.tsx` auth-aware redirect (no content render)
 - Sign-out server action wired to `/dashboard` placeholder
-- Middleware redirect-matrix test, inbucket E2E test, sign-out test
+- Middleware redirect-matrix test, Mailpit (formerly inbucket) E2E test, sign-out test
 - Branch push, PR creation, Linear → In Review
 
 **Decisions made:**

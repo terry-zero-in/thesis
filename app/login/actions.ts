@@ -26,9 +26,10 @@ export async function signInWithMagicLink(
 
   const supabase = await createClient();
   const hdrs = await headers();
+  const proto = hdrs.get("x-forwarded-proto") ?? "http";
   const origin =
     hdrs.get("origin") ??
-    (hdrs.get("host") ? `https://${hdrs.get("host")}` : "http://localhost:3000");
+    (hdrs.get("host") ? `${proto}://${hdrs.get("host")}` : "http://localhost:3000");
 
   const { error } = await supabase.auth.signInWithOtp({
     email,

@@ -3,6 +3,9 @@
  * Renders every primitive in the design system so any drift is visually
  * detectable. Not user-facing — a regression check for THS-1.
  */
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const SURFACE_TOKENS = [
   { name: "--color-bg", hex: "#0A0B0E", note: "App canvas + sidebar (merged)" },
@@ -115,15 +118,7 @@ function Section({
   );
 }
 
-function Swatch({
-  name,
-  hex,
-  note,
-}: {
-  name: string;
-  hex: string;
-  note: string;
-}) {
+function Swatch({ name, hex, note }: { name: string; hex: string; note: string }) {
   return (
     <div className="flex items-center gap-3">
       <div
@@ -152,10 +147,7 @@ function Swatch({
         >
           {hex}
         </div>
-        <div
-          className="text-[11px] truncate"
-          style={{ color: "var(--color-text-2)" }}
-        >
+        <div className="text-[11px] truncate" style={{ color: "var(--color-text-2)" }}>
           {note}
         </div>
       </div>
@@ -168,17 +160,15 @@ export default function TokensPage() {
     <main className="min-h-screen px-8 py-8">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
-        <header className="flex items-baseline justify-between border-b pb-4" style={{ borderColor: "var(--color-border-subtle)" }}>
+        <header
+          className="flex items-baseline justify-between border-b pb-4"
+          style={{ borderColor: "var(--color-border-subtle)" }}
+        >
           <div>
             <div className="flex items-baseline gap-3">
-              <h1 className="text-[18px] font-medium tracking-[-0.015em]">
-                Token verification
-              </h1>
+              <h1 className="text-[18px] font-medium tracking-[-0.015em]">Token verification</h1>
               <span className="h-3 w-px" style={{ background: "var(--color-border)" }} />
-              <span
-                className="text-[13px]"
-                style={{ color: "var(--color-text-2)" }}
-              >
+              <span className="text-[13px]" style={{ color: "var(--color-text-2)" }}>
                 DESIGN_SPEC v1.0 · THS-1
               </span>
             </div>
@@ -233,10 +223,7 @@ export default function TokensPage() {
                 >
                   {t.hex}
                 </div>
-                <div
-                  className="text-[11px]"
-                  style={{ color: "var(--color-text-2)" }}
-                >
+                <div className="text-[11px]" style={{ color: "var(--color-text-2)" }}>
                   {t.note}
                 </div>
               </div>
@@ -298,10 +285,7 @@ export default function TokensPage() {
           <div className="grid grid-cols-2 gap-x-8 gap-y-2 max-w-md">
             {NUMERIC_ROWS.map((r) => (
               <div key={r.label} className="contents">
-                <span
-                  className="text-[11px]"
-                  style={{ color: "var(--color-text-3)" }}
-                >
+                <span className="text-[11px]" style={{ color: "var(--color-text-3)" }}>
                   {r.label}
                 </span>
                 <span
@@ -335,9 +319,7 @@ export default function TokensPage() {
                   style={{
                     background: s.hex,
                     opacity: s.lowOpacity ? 0.5 : 1,
-                    boxShadow: s.lowOpacity
-                      ? "none"
-                      : `0 0 0 3px ${s.hex}1f`,
+                    boxShadow: s.lowOpacity ? "none" : `0 0 0 3px ${s.hex}1f`,
                   }}
                 />
                 {/* Soft pill */}
@@ -345,9 +327,7 @@ export default function TokensPage() {
                   className="text-[10px] tnum px-2 py-0.5 rounded-[2px] uppercase tracking-[0.04em]"
                   style={{
                     color: s.hex,
-                    background: s.lowOpacity
-                      ? "var(--color-surface-2)"
-                      : `${s.hex}1f`,
+                    background: s.lowOpacity ? "var(--color-surface-2)" : `${s.hex}1f`,
                     fontFamily: "var(--font-mono)",
                   }}
                 >
@@ -412,10 +392,7 @@ export default function TokensPage() {
                       style={{
                         width: 4,
                         height: 8,
-                        background:
-                          i < n
-                            ? "var(--color-accent)"
-                            : "var(--color-surface-2)",
+                        background: i < n ? "var(--color-accent)" : "var(--color-surface-2)",
                       }}
                     />
                   ))}
@@ -452,7 +429,10 @@ export default function TokensPage() {
         </Section>
 
         {/* Spacing scale */}
-        <Section title="Spacing scale" meta="2 · 4 · 6 · 8 · 10 · 12 · 14 · 16 · 18 · 20 · 24 · 32 px">
+        <Section
+          title="Spacing scale"
+          meta="2 · 4 · 6 · 8 · 10 · 12 · 14 · 16 · 18 · 20 · 24 · 32 px"
+        >
           <div className="space-y-2">
             {SPACING_SCALE.map((s) => (
               <div key={s} className="flex items-center gap-4">
@@ -503,6 +483,34 @@ export default function TokensPage() {
                 </span>
               </div>
             ))}
+          </div>
+        </Section>
+
+        {/* shadcn primitives — THS-3 verification */}
+        <Section title="shadcn primitives" meta="bridged via :root token mapping (HANDOFF.md)">
+          <div className="grid gap-6 p-4 md:grid-cols-2">
+            <div className="space-y-3">
+              <span
+                className="text-[11px] uppercase tracking-[0.06em]"
+                style={{ color: "var(--color-text-3)" }}
+              >
+                Button variants
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <Button>Send magic link</Button>
+                <Button variant="outline">Outline</Button>
+                <Button variant="ghost">Ghost</Button>
+                <Button variant="destructive">Destructive</Button>
+                <Button variant="link">Link</Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email-preview">Email</Label>
+              <Input id="email-preview" type="email" placeholder="you@example.com" />
+              <span className="text-[11px]" style={{ color: "var(--color-text-3)" }}>
+                Used by /login (THS-3) — magic-link flow.
+              </span>
+            </div>
           </div>
         </Section>
 

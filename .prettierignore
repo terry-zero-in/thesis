@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+build
+dist
+pnpm-lock.yaml
+*.md
+docs/design/mockups
+docs/design/screenshots

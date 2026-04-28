@@ -62,7 +62,8 @@ cd /Users/terryturner/Projects/thesis
 pnpm install
 ```
 
-### 3. Tailwind 4 `@theme` block + Geist fonts + shadcn init + Prettier
+### 3. Tailwind 4 `@theme` block + Geist fonts + Prettier
+*(Note 2026-04-28: shadcn init originally included here, **deferred to THS-3**. See "shadcn token mapping" section below for the pre-committed mapping that makes THS-3 execution-only.)*
 Edit `app/globals.css` to add `@theme { ... }` with the LOCKED tokens (Terry's latest values, not the blueprint defaults):
 
 ```
@@ -84,7 +85,7 @@ font-mono:      Geist Mono (with `font-feature-settings: "tnum"` on numeric util
 ```
 
 - Wire Geist Sans + Mono via the `geist` npm package (pinned 1.7.0).
-- Run `npx shadcn@latest init` — choose dark theme, our tokens, no slate base.
+- ~~Run `npx shadcn@latest init` — choose dark theme, our tokens, no slate base.~~ **DEFERRED to THS-3** (2026-04-28).
 - Add `.prettierrc` (use Prettier 3.x). ESLint config comes from create-next-app — verify it's present.
 - **Important:** This MUST conform to Terry's design references. If anything in his references conflicts with the tokens above, ASK before resolving.
 
@@ -158,12 +159,45 @@ vitest           4.1.5
 ### Build order to Perplexity Checkpoint #1
 THS-1 → THS-2 → THS-3 → THS-4. **Stop after THS-4 merges.** Perplexity grades against the blueprint, then unblocks THS-5+.
 
-- **THS-1:** Next.js scaffold + tokens + Geist + shadcn init + ESLint/Prettier + `/tokens` page. **No sidebar, no auth, no Supabase, no app shell.**
+- **THS-1:** Next.js scaffold + tokens + Geist + ESLint/Prettier + `/tokens` page. **No sidebar, no auth, no Supabase, no app shell.** **shadcn init DEFERRED to THS-3** (decided 2026-04-28 — init without components to validate against = config-by-principle with no feedback loop).
 - **THS-2:** Supabase schema + RLS on every table per blueprint **Section D** (Perplexity keeps writing "Section H" — Section H is "Retool vs Custom App". The schema is in Section D. Auth RLS pattern: `auth.uid() = user_id` on user-owned tables; public-read on `tickers` / `companies` / `data_sources`.)
-- **THS-3:** Magic-link auth + protected route middleware + sign-in page.
+- **THS-3:** Magic-link auth + protected route middleware + sign-in page + **shadcn init (deferred from THS-1)** + first components: `button`, `input`, `label`. Token mapping is pre-decided (see "shadcn token mapping" section below) so this is execution, not decision work.
 - **THS-4:** Sidebar + topnav + ⌘K command palette.
 
 Four Perplexity checkpoints across the whole Phase 1 build: after THS-4, after step 7 (first memo end-to-end), after step 11 (approval flow), and pre-prod (step 14).
+
+### shadcn token mapping (pre-committed for THS-3)
+
+shadcn init was originally scoped into THS-1 but deferred to THS-3 on 2026-04-28 (init without components to validate against = config-by-principle with no feedback loop). To keep THS-3 as execution-only, the token mapping is locked here in advance.
+
+Map shadcn's default token names to our DESIGN_SPEC tokens. Apply when running `npx shadcn@latest init` — overwrite shadcn's generated `:root` block in `app/globals.css` with this mapping:
+
+| shadcn token | Our token | Hex / Value |
+|---|---|---|
+| `--background` | `--bg` | `#0A0B0E` |
+| `--foreground` | `--text-1` | `#F0F1F3` |
+| `--primary` | `--accent` | `#4D5BFF` |
+| `--primary-foreground` | (literal) | `#FFFFFF` |
+| `--card` | `--surface` | `#14161B` |
+| `--card-foreground` | `--text-1` | `#F0F1F3` |
+| `--popover` | `--surface-2` | `#1A1D24` |
+| `--popover-foreground` | `--text-1` | `#F0F1F3` |
+| `--muted` | `--surface-2` | `#1A1D24` |
+| `--muted-foreground` | `--text-2` | `#9298A3` |
+| `--accent` ⚠️ | `--surface-hover` | `#1F232B` |
+| `--accent-foreground` | `--text-1` | `#F0F1F3` |
+| `--destructive` | `--danger` | `#E26B6B` |
+| `--border` | `--border-subtle` | `#1A1D24` |
+| `--input` | `--surface-2` | `#1A1D24` |
+| `--ring` | `--accent` | `#4D5BFF` |
+
+⚠️ **Trap:** shadcn's `--accent` is its hover/secondary surface, NOT a brand accent. Map it to `--surface-hover`, not our `--accent`. Otherwise every hover state gets a brand-blue wash.
+
+**THS-3 shadcn execution path:**
+1. `npx shadcn@latest init` — when prompted, accept defaults that don't conflict with our tokens
+2. Replace shadcn's generated `:root` block in `app/globals.css` with the mapping above
+3. Install primitives: `npx shadcn@latest add button input label`
+4. Visual-verify each component matches DESIGN_SPEC before THS-3 commits
 
 ---
 

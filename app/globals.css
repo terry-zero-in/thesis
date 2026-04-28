@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   AI Thesis — Investment OS · Design tokens
+   Source of truth: docs/design/DESIGN_SPEC.md
+   Token sheet: docs/design/thesis-design-system.css
+   ========================================================================== */
+
+@theme {
+  /* Surface */
+  --color-bg: #0A0B0E;
+  --color-surface: #14161B;
+  --color-surface-2: #1A1D24;
+  --color-surface-hover: #1F232B;
+  --color-border: #232730;
+  --color-border-subtle: #1A1D24;
+
+  /* Text */
+  --color-text-1: #F0F1F3;
+  --color-text-2: #9298A3;
+  --color-text-3: #5F6571;
+
+  /* Accent */
+  --color-accent: #4D5BFF;
+  --color-accent-soft: rgba(77, 91, 255, 0.12);
+  --color-accent-hover: #6573FF;
+
+  /* Status */
+  --color-success: #4FB87A;
+  --color-success-soft: rgba(79, 184, 122, 0.12);
+  --color-warning: #DDA84F;
+  --color-warning-soft: rgba(221, 168, 79, 0.12);
+  --color-danger: #E26B6B;
+  --color-danger-soft: rgba(226, 107, 107, 0.12);
+  --color-info: #5B8FFF;
+  --color-info-soft: rgba(91, 143, 255, 0.10);
+
+  /* Fonts (variables come from next/font in app/layout.tsx) */
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+/* Base reset + body chrome */
+html, body {
+  background: var(--color-bg);
+  color: var(--color-text-1);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Tabular figures utility (DESIGN_SPEC §3 — every numeric element) */
+@utility tnum {
+  font-feature-settings: "tnum";
+}
+
+/* Body atmosphere — barely perceptible (DESIGN_SPEC §2) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle at 20% 0%, rgba(77, 91, 255, 0.025) 0%, transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(91, 143, 255, 0.015) 0%, transparent 40%);
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Live indicator pulse (DESIGN_SPEC §7.5) */
+@keyframes pulseLive {
+  0% { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Subtle scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-surface-hover);
+}

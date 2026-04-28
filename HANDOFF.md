@@ -1,8 +1,8 @@
 # Thesis — Session Handoff
 
-**Session date:** 2026-04-27
-**Closing Claude:** Code #184_04.24.2026 (06-042426), row `e7bff8c1-88a5-4701-8ec1-f80eb731e44c`
-**Status at close:** THS-1 paused mid-scaffold awaiting Terry's design references.
+**Session date:** 2026-04-28
+**Closing Claude:** Code #201_04.27.2026 (13-042726), row `70960761-aa7b-410e-a9ac-af009c5016d4`
+**Status at close:** THS-1 SHIPPED. THS-2 (Supabase schema + RLS) ready to start.
 
 ---
 
@@ -12,156 +12,188 @@
 
 - **Local path:** `/Users/terryturner/Projects/thesis/`
 - **GitHub:** <https://github.com/terry-zero-in/thesis> (private)
+- **Vercel:** linked (`prj_5T2AVhcZLqcaASZwoiWdwTtxGFZP`), GitHub auto-deploy on
+- **Live URL:** <https://thesis-nu.vercel.app>
 - **Linear team:** Thesis (id `21c004fc-6402-4d22-9316-fa9a05bb9b82`)
 - **Linear project:** Phase 1 — MVP (id `696890cc-84bc-45ad-a22c-a24124cf9124`)
-- **Blueprint source:** `/Users/terryturner/Downloads/Investment Portal Blueprint.md` (2,483 lines, sections A–N — read this end-to-end before doing anything)
+- **Blueprint source:** `/Users/terryturner/Downloads/Investment Portal Blueprint.md` (2,483 lines, sections A–N — read end-to-end)
 
 ## Current repo state
 
 ```
-main branch:                empty initial commit (1e174fd)
-ths-1-scaffold-tokens:      commit 25876de — chore: project hygiene (5 files)
-                             ↳ README.md, .gitignore, .env.example,
-                                .nvmrc (22.11.0), pnpm-workspace.yaml
+main:  94e622f — THS-1 merged (Next 16 scaffold + design system locked)
+       ├─ docs/design/   DESIGN_SPEC.md v1.0 (490 lines, source of truth)
+       │                 4 screenshots + 2 mockup HTMLs + 392-line CSS token sheet
+       ├─ app/           globals.css with @theme block, layout.tsx, page.tsx, dashboard/, tokens/
+       ├─ AGENTS.md      Next 16 agent guidance (read before writing code)
+       ├─ CLAUDE.md      @AGENTS.md import
+       └─ HANDOFF.md PROGRESS.md README.md
 ```
 
-**Nothing else exists.** No Next.js scaffold, no node_modules, no Tailwind, no components.
+**Stack pinned (live npm at install):**
+```
+next                16.2.4
+react               19.2.4
+react-dom           19.2.4
+typescript          5.9.3       ← satisfies HANDOFF "NOT 6"; downgrade to 5.7.3 only if needed
+tailwindcss         4.2.4
+eslint-config-next  16.2.4
+prettier            3.8.3
+```
 
-## Where work paused and why
+**No dependencies installed yet for THS-2:** Supabase JS, Supabase SSR. Inngest, Anthropic SDK, Resend, Recharts, react-hook-form etc. all land in their respective tickets.
 
-THS-1 (Linear: "1. Scaffold Next.js repo + design tokens") is **In Progress**. Commit #1 landed. Next step was `pnpm create next-app@16` + Tailwind 4 `@theme` tokens + Geist fonts + shadcn init + ESLint/Prettier + throwaway `/tokens` page.
+## What's live
 
-**Then Terry stopped me.** He has exact CSS, HTML renderings, and screenshots for the entire app's theme + formatting that he wants to share BEFORE any UI scaffolding begins. He explicitly said *"I want the entire app to follow this exact theme and formatting."*
+| Route | Purpose |
+|---|---|
+| `/` | Brand wordmark placeholder ("AI Thesis" · "Investment OS") |
+| `/dashboard` | THS-1 acceptance placeholder (real shell ships in THS-4) |
+| `/tokens` | Design system regression page — 20 swatches, type ladder, severity, reco pills, conviction ticks, live pulse, spacing/radius scales |
 
-Per Terry's "Match exactly = EVERYTHING" rule (memory: `feedback_communication_preferences`), pixel-perfect adherence is non-negotiable.
-
-**Do not run create-next-app or write any UI/CSS until Terry has shared the references.** Even the throwaway `/tokens` page must conform.
+Visit any of these on `https://thesis-nu.vercel.app` to verify deploy.
 
 ---
 
-## THE NEXT 5 TASKS (execute in order)
+## THE NEXT 3-5 TASKS (execute in order)
 
-### 1. Receive and absorb Terry's design references
-Ask Terry where they are. Three things to learn:
-- **Paths or attachments** — file paths, screenshots in chat, or both
-- **Format mix** — screenshots only, or HTML/CSS files I can read
-- **Coverage** — global theme only, or specific screens (sidebar, dashboard, etc.)
-
-Propose committing them to `/docs/design/` in the repo so they're versioned, but defer to Terry. Read everything in detail. Confirm the locked tokens still apply or capture any overrides.
-
-### 2. Resume scaffold (still THS-1)
-From `/Users/terryturner/Projects/thesis/` on branch `ths-1-scaffold-tokens`:
+### 1. Sanity check on session open
 ```bash
-# Create scaffold in temp dir to preserve commit #1 files
-cd /tmp
-pnpm create next-app@16 thesis-scaffold --ts --tailwind --eslint --app --no-src-dir --use-pnpm --import-alias "@/*"
-# Move all files except .git into the project dir
-rsync -av --exclude='.git' --exclude='node_modules' /tmp/thesis-scaffold/ /Users/terryturner/Projects/thesis/
-# Reconcile .gitignore (keep our additions, merge Next's)
 cd /Users/terryturner/Projects/thesis
-pnpm install
+git pull origin main && git status   # should be clean, on main, at 94e622f
+gh pr list                            # should be empty (no open PRs)
 ```
+Then via Linear MCP: confirm THS-2 is in **Todo** state (not started). If anything looks off, surface to Terry before proceeding.
 
-### 3. Tailwind 4 `@theme` block + Geist fonts + Prettier
-*(Note 2026-04-28: shadcn init originally included here, **deferred to THS-3**. See "shadcn token mapping" section below for the pre-committed mapping that makes THS-3 execution-only.)*
-Edit `app/globals.css` to add `@theme { ... }` with the LOCKED tokens (Terry's latest values, not the blueprint defaults):
+### 2. Branch and start THS-2 (Supabase schema + RLS)
 
-```
-canvas:   #121415
-card:     #1B1D1E
-sidebar:  #030303
-elevated: #232526
-accent:   #2E5BFF
-success:  #3FB950   ← GitHub green, NOT blueprint #22C55E
-warning:  #F0B72F   ← GitHub yellow, NOT blueprint #F59E0B
-danger:   #E5484D   ← Radix red, NOT blueprint #EF4444
-info:     #8b5cf6   ← matches blueprint violet
-text-primary:   #F0F0F0
-text-secondary: #9B9B9B
-text-muted:     #666666
-border:         #2A2A2A
-font-sans:      Geist Sans
-font-mono:      Geist Mono (with `font-feature-settings: "tnum"` on numeric utility)
-```
-
-- Wire Geist Sans + Mono via the `geist` npm package (pinned 1.7.0).
-- ~~Run `npx shadcn@latest init` — choose dark theme, our tokens, no slate base.~~ **DEFERRED to THS-3** (2026-04-28).
-- Add `.prettierrc` (use Prettier 3.x). ESLint config comes from create-next-app — verify it's present.
-- **Important:** This MUST conform to Terry's design references. If anything in his references conflicts with the tokens above, ASK before resolving.
-
-### 4. Build `/app/tokens/page.tsx` verification page
-Throwaway route. Renders:
-- Every color swatch (color block, label with hex value, name)
-- Geist Sans heading sample (sizes 14/16/24/32/48)
-- Geist Mono numeric sample row showing tabular-figures alignment for prices/changes/volume (e.g., `$117.50` / `+2.74%` / `185,432,910`)
-
-This proves tokens + fonts wire correctly without committing to design choices Terry hasn't approved.
-
-### 5. Commit #2 + open PR + move THS-1 to In Review
 ```bash
-git add .
-git commit -m "feat(THS-1): Next.js 16 scaffold + Tailwind tokens + Geist fonts + /tokens verification page"
-git push -u origin ths-1-scaffold-tokens
-gh pr create --base main --title "THS-1: Scaffold Next.js repo + design tokens" --body "..."
-# Then via Linear MCP:
-mcp__claude_ai_Linear__save_issue id="THS-1" state="In Review"
+git checkout -b ths-2-supabase-schema
+```
+Then via Linear MCP: move THS-2 to **In Progress**.
+
+THS-2's scope is **schema + RLS only** — no auth UI, no app shell, no data flows. Magic-link auth lands in THS-3.
+
+### 3. Install Supabase deps + initialize local stack
+
+```bash
+pnpm add @supabase/supabase-js@2.104.1 @supabase/ssr@0.10.2
+pnpm add -D supabase    # CLI for local dev (or use brew-installed)
+supabase init
+supabase start          # boots local Postgres via Docker; Docker MUST be running
 ```
 
-PR title MUST start with `THS-1:` so Linear auto-links. Squash-merge (Perplexity's call). After merge, move THS-1 to Done and start THS-2.
+Capture the local Supabase keys from `supabase start` output and add to `.env.local` (DO NOT commit). The `.env.example` already lists the var names.
+
+### 4. Write the schema migration per blueprint Section D
+
+**Source of truth: blueprint Section D.** NOT Section H. Section H is "Retool vs Custom App." If anything in the blueprint references Section H for schema, ignore — Section D is the schema.
+
+Tables (per blueprint Section D):
+- `tickers` — public read
+- `companies` — public read
+- `data_sources` — public read (health monitoring)
+- `watchlist_items` — RLS `auth.uid() = user_id`
+- `triggers` — RLS `auth.uid() = user_id`
+- `research_jobs` — RLS `auth.uid() = user_id`
+- `memos` — RLS `auth.uid() = user_id`
+- `decisions` — RLS `auth.uid() = user_id`
+- `alerts` — RLS `auth.uid() = user_id`
+- `audit_log` — RLS `auth.uid() = user_id` (append-only)
+- `cost_events` — RLS `auth.uid() = user_id`
+
+Generate via `supabase migration new initial_schema`. Paste full SQL inline in chat (per Terry preference) so he can copy to Supabase SQL Editor for prod later.
+
+### 5. Verify RLS, generate types, commit, PR
+
+```bash
+supabase db reset              # rebuild local DB clean
+pnpm dlx supabase gen types typescript --local > types/supabase.ts
+git add supabase/ types/supabase.ts
+git commit -m "feat(THS-2): Supabase schema + RLS per blueprint Section D"
+git push -u origin ths-2-supabase-schema
+gh pr create --base main --title "THS-2: Supabase schema + RLS" --body "..."
+```
+
+Then via Linear MCP: move THS-2 to **In Review**. After Terry merges → THS-2 → Done → start THS-3.
 
 ---
 
 ## Locked decisions (do not relitigate without Terry's explicit override)
 
-### Stack versions (pinned, checked live on npm registry 2026-04-27)
+### Stack versions (refreshed 2026-04-28)
 ```
-next             15.5.4 → upgrade to 16.2.4 per Perplexity
-react            19.2.5
-react-dom        19.2.5
-typescript       5.7.3 (NOT 6 — too fresh)
-tailwindcss      4.2.4
-zod              3.25.x (NOT 4 — RHF peer-range chaos)
-@supabase/supabase-js  2.104.1
-@supabase/ssr    0.10.2
-inngest          4.2.4
-@anthropic-ai/sdk 0.91.0
-@tanstack/react-table 8.21.3
-recharts         3.8.1
+next             16.2.4 ✅ installed
+react            19.2.4 ✅ installed (19.2.5 available — minor)
+react-dom        19.2.4 ✅ installed
+typescript       5.9.3  ✅ installed (HANDOFF said 5.7.3 — 5.9.3 satisfies "NOT 6")
+tailwindcss      4.2.4  ✅ installed
+zod              3.25.x — install in THS-3 with form work (NOT 4 — RHF peer-range chaos)
+@supabase/supabase-js  2.104.1 — install in THS-2
+@supabase/ssr    0.10.2 — install in THS-2
+inngest          4.2.4 — install in THS-9
+@anthropic-ai/sdk 0.91.0 — install in THS-7
+@tanstack/react-table 8.21.3 — install in THS-5/6
+recharts         3.8.1 — install in THS-6
 @tremor/react    3.18.7 (note: Tremor OSS in maintenance mode; may swap for shadcn/charts)
-react-hook-form  7.73.1
-@hookform/resolvers 5.x
-react-markdown   10.1.0
-rehype-highlight 7.0.2
-geist            1.7.0
-resend           6.12.2
-date-fns         4.x
-vitest           4.1.5
-@vitest/coverage-v8 4.1.5
+react-hook-form  7.73.1 — install in THS-3
+@hookform/resolvers 5.x — with RHF
+react-markdown   10.1.0 — install in THS-10
+rehype-highlight 7.0.2 — with markdown
+geist            (using next/font/google — no separate npm package)
+resend           6.12.2 — install in THS-11
+date-fns         4.x — when needed
+vitest           4.1.5 — when first test ticket
+@vitest/coverage-v8 4.1.5 — with vitest
+prettier         3.8.3 ✅ installed
 ```
 
+### Design system (DESIGN_SPEC.md is authoritative)
+
+`docs/design/DESIGN_SPEC.md` is the source of truth. Read it before any UI work.
+
+**Tokens (LOCKED — supersedes all prior):**
+- bg `#0A0B0E` (canvas + sidebar merged into single plane)
+- surface `#14161B` · surface-2 `#1A1D24` · surface-hover `#1F232B`
+- border `#232730` · border-subtle `#1A1D24`
+- text-1 `#F0F1F3` · text-2 `#9298A3` · text-3 `#5F6571`
+- accent `#4D5BFF` · accent-soft `rgba(77,91,255,.12)` · accent-hover `#6573FF`
+- success `#4FB87A` · warning `#DDA84F` · danger `#E26B6B` · info `#5B8FFF` (each with `*-soft` 12% alpha pair)
+
+**OLD tokens are RETIRED:** if you see references to `#121415 / #2E5BFF / #3FB950 / #F0B72F / #E5484D / #8b5cf6` anywhere in old conversations or stale docs, IGNORE them. Use the locked set above.
+
+**Brand:** "AI Thesis" wordmark (text-only, no icon) + "Investment OS" product label in topbar.
+**Macro strip (curated 8):** SPX · NDX · RUT · VIX · US10Y · DXY · WTI · GOLD.
+**Snooze button:** soft fill (`warning-soft` bg, `warning` text).
+**Fonts:** Geist Sans + JetBrains Mono via `next/font/google` (NOT Geist Mono, NOT npm `geist` package).
+**Numerics:** every numeric element gets `font-feature-settings: "tnum"` — utility class `.tnum` is registered in globals.css.
+
+**Per-ticket discipline:** new screens get empty/loading/error states drafted in their own ticket, not pre-designed in bulk.
+
 ### Auth + workflow
-- **Magic-link auth** (Supabase Auth), single user (Terry). No email/password (blueprint had a stale email/password line; Perplexity overrode to magic-link).
+- **Magic-link auth** (Supabase Auth), single user (Terry). No email/password.
 - **One Resend email per memo** on `memo.status → pending_approval`, body = magic-link-authed deep link to `/memos/[id]/approve`. **No alert emails in Phase 1.**
 - **Trigger evaluator code-only in Phase 1** — class + vitest tests + `POST /api/triggers/evaluate-now` endpoint. NO Inngest cron, NO automated alert generation. Cron lives in Phase 2.
 
 ### Data + agents
 - **10 watchlist tickers seeded** per blueprint Section K: NVDA, MSFT, NET, MDB, INTC, PYPL, VZ, BRK-B, SPY, QQQ. Of these, NVDA / MSFT / NET / INTC / PYPL are **fully interactive** (research jobs, memos, approvals). The other 5 are watchlist rows + chart pages only in Phase 1.
-- **LLMRouter** interface supports all 5 providers (Claude / GPT-5 / Gemini / Perplexity Sonar Pro / Perplexity Sonar). **Phase 1 wires only Anthropic + Perplexity.** No OpenAI, no Google, no Haiku fallback. If Sonnet errors, surface the error — don't paper over it.
-- **No Marketaux in Phase 1.** Perplexity Sonar Pro's web grounding covers news. FMP analyst ratings fetched directly via FMP client and passed as agent context.
+- **LLMRouter** interface supports all 5 providers. **Phase 1 wires only Anthropic + Perplexity.** No OpenAI, no Google, no Haiku fallback. If Sonnet errors, surface the error — don't paper over it.
+- **No Marketaux in Phase 1.** Perplexity Sonar Pro's web grounding covers news. FMP analyst ratings fetched directly via FMP client.
 - **SEC EDGAR User-Agent:** exactly `Thesis Terry terry@zero-in.io` (no trailing period).
 
 ### Git + Linear workflow
-- **One PR per ticket against `main`**, branch `ths-N-slug` (e.g., `ths-1-scaffold-tokens` — NOT Linear's auto-generated `terry/ths-1-1-...`). Squash-merge.
+- **One PR per ticket against `main`**, branch `ths-N-slug` (NOT Linear's auto-generated `terry/ths-N-N-...`). Squash-merge.
 - **PR title format:** `THS-N: <title>` so Linear auto-links.
-- **Linear state machine:** Todo → In Progress (when work starts) → In Review (when PR opens) → Done (after merge).
-- **Linear MCP rule:** Claude operates Linear via MCP for everything. UI-only steps require explicit click-by-click instructions for Terry. (Memory: `feedback_linear_mcp_responsibility.md`.)
+- **Linear state machine:** Todo → In Progress (work starts) → In Review (PR opens) → Done (after merge).
+- **Linear MCP:** Claude operates Linear via MCP for everything. UI-only steps require explicit click-by-click instructions for Terry.
 
 ### Build order to Perplexity Checkpoint #1
-THS-1 → THS-2 → THS-3 → THS-4. **Stop after THS-4 merges.** Perplexity grades against the blueprint, then unblocks THS-5+.
 
-- **THS-1:** Next.js scaffold + tokens + Geist + ESLint/Prettier + `/tokens` page. **No sidebar, no auth, no Supabase, no app shell.** **shadcn init DEFERRED to THS-3** (decided 2026-04-28 — init without components to validate against = config-by-principle with no feedback loop).
-- **THS-2:** Supabase schema + RLS on every table per blueprint **Section D** (Perplexity keeps writing "Section H" — Section H is "Retool vs Custom App". The schema is in Section D. Auth RLS pattern: `auth.uid() = user_id` on user-owned tables; public-read on `tickers` / `companies` / `data_sources`.)
-- **THS-3:** Magic-link auth + protected route middleware + sign-in page + **shadcn init (deferred from THS-1)** + first components: `button`, `input`, `label`. Token mapping is pre-decided (see "shadcn token mapping" section below) so this is execution, not decision work.
+THS-1 ✅ → THS-2 → THS-3 → THS-4. **Stop after THS-4 merges.** Perplexity grades against the blueprint, then unblocks THS-5+.
+
+- **THS-1:** ✅ Done — scaffold + tokens + Geist + ESLint/Prettier + `/tokens` page + `/dashboard` placeholder. Live at https://thesis-nu.vercel.app. shadcn deferred to THS-3.
+- **THS-2:** Supabase schema + RLS on every table per blueprint **Section D**. Auth RLS pattern: `auth.uid() = user_id` on user-owned tables; public-read on `tickers` / `companies` / `data_sources`.
+- **THS-3:** Magic-link auth + protected route middleware + sign-in page + **shadcn init (deferred from THS-1)** + first components: `button`, `input`, `label`. Token mapping is pre-decided (see below) so this is execution, not decision work.
 - **THS-4:** Sidebar + topnav + ⌘K command palette.
 
 Four Perplexity checkpoints across the whole Phase 1 build: after THS-4, after step 7 (first memo end-to-end), after step 11 (approval flow), and pre-prod (step 14).
@@ -169,8 +201,6 @@ Four Perplexity checkpoints across the whole Phase 1 build: after THS-4, after s
 ### shadcn token mapping (pre-committed for THS-3)
 
 shadcn init was originally scoped into THS-1 but deferred to THS-3 on 2026-04-28 (init without components to validate against = config-by-principle with no feedback loop). To keep THS-3 as execution-only, the token mapping is locked here in advance.
-
-Map shadcn's default token names to our DESIGN_SPEC tokens. Apply when running `npx shadcn@latest init` — overwrite shadcn's generated `:root` block in `app/globals.css` with this mapping:
 
 | shadcn token | Our token | Hex / Value |
 |---|---|---|
@@ -194,7 +224,7 @@ Map shadcn's default token names to our DESIGN_SPEC tokens. Apply when running `
 ⚠️ **Trap:** shadcn's `--accent` is its hover/secondary surface, NOT a brand accent. Map it to `--surface-hover`, not our `--accent`. Otherwise every hover state gets a brand-blue wash.
 
 **THS-3 shadcn execution path:**
-1. `npx shadcn@latest init` — when prompted, accept defaults that don't conflict with our tokens
+1. `npx shadcn@latest init`
 2. Replace shadcn's generated `:root` block in `app/globals.css` with the mapping above
 3. Install primitives: `npx shadcn@latest add button input label`
 4. Visual-verify each component matches DESIGN_SPEC before THS-3 commits
@@ -206,51 +236,62 @@ Map shadcn's default token names to our DESIGN_SPEC tokens. Apply when running `
 | Tool | Status | Notes |
 |---|---|---|
 | Node | ✅ v24.14.1 | dev box; `.nvmrc` pins 22.11.0 for Vercel parity |
-| pnpm | ✅ via brew | latest |
+| pnpm | ✅ 10.33.2 via brew | latest |
 | git | ✅ 2.50.1 | |
 | `gh` CLI | ✅ 2.89.0 | logged into `terry-zero-in`, ssh, `repo` scope |
-| Supabase CLI | ✅ via brew | not yet `supabase init` in this repo |
-| Vercel CLI | ✅ 52.0.0 | not yet `vercel link` |
-| Docker Desktop | ✅ 4.71.0 running | took 3 attempts — see Gotchas |
-| Inngest CLI | ⚠️ not yet | use `npx inngest-cli@latest dev` at use-time, no install needed |
+| Supabase CLI | ✅ via brew | NOT yet `supabase init` — that's THS-2 task |
+| Vercel CLI | ✅ 52.0.0 | logged in as `terry-8893`, project linked |
+| Docker Desktop | ✅ 4.71.0 | required to be RUNNING for `supabase start` in THS-2 |
+| Inngest CLI | ⚠️ defer | use `npx inngest-cli@latest dev` at use-time |
 
 ## Gotchas
 
-1. **Brew `docker` cask is dead.** The current cask is `docker-desktop` (the old `docker` cask is empty/redirect). Burned ~30 minutes finding this.
-2. **Brew cask Docker install fails in non-interactive shells.** It needs sudo for `/usr/local/cli-plugins/` and `/usr/local/bin/` symlinks. Direct DMG download from <https://desktop.docker.com/mac/main/arm64/Docker.dmg> + `cp -R /Volumes/Docker/Docker.app /Applications/` is the reliable path.
-3. **macOS Full Disk Access is NOT granted to Claude.** Can't `ls ~/Downloads`. If needed, Terry must enable in System Settings → Privacy & Security → Full Disk Access. Workaround: use `mdfind` (Spotlight) or have Terry paste paths.
-4. **Working directory persists across `Bash` tool calls** in this Claude environment. The system says shell state doesn't persist but cwd does — verified.
-5. **Section H vs Section D in blueprint.** Perplexity references "Section H" for the schema; the actual schema is in Section D. Section H is "Retool vs. Custom App." Use Section D as the schema source of truth.
-6. **Tremor OSS is in maintenance mode** — the active product is Tremor Blocks (paid). If Tremor doesn't suffice for charts/KPIs, swap for `shadcn/charts` (which uses Recharts under the hood).
-7. **Approval email scope is narrow.** ONE email per memo on state transition to `pending_approval`. Magic-link-authed deep link. No alert emails, no severity prefs, no email digests in Phase 1. Don't expand scope.
+1. **Brew `docker` cask is dead.** Current cask is `docker-desktop`. Burned ~30 min last session finding this.
+2. **Brew cask Docker install fails non-interactive.** Needs sudo for `/usr/local/cli-plugins/` symlinks. Direct DMG download from <https://desktop.docker.com/mac/main/arm64/Docker.dmg> + `cp -R /Volumes/Docker/Docker.app /Applications/` is the reliable path.
+3. **macOS Full Disk Access NOT granted to Claude.** Can't `ls ~/Downloads`. Workaround: `mdfind` (Spotlight) or have Terry paste paths.
+4. **Working directory persists across `Bash` tool calls** even though shell state doesn't.
+5. **Section H vs Section D in blueprint.** Perplexity references "Section H" for schema; the actual schema is in **Section D**. Section H is "Retool vs Custom App."
+6. **Tremor OSS is in maintenance mode** — active product is paid Tremor Blocks. If Tremor doesn't suffice, swap for `shadcn/charts` (Recharts under the hood).
+7. **Approval email scope is narrow.** ONE email per memo on transition to `pending_approval`. Magic-link-authed deep link. No alert emails, no severity prefs, no email digests in Phase 1.
+8. **First Vercel deploy hit production target.** Vercel's default for a project's first-ever deploy is production, not preview. Future PR deploys will be previews via GitHub integration. The `https://thesis-nu.vercel.app` alias is now production.
+9. **`.vercel/` is gitignored per Vercel's own README.** Re-link via `vercel link --project thesis` if needed (5s op). Project ID is `prj_5T2AVhcZLqcaASZwoiWdwTtxGFZP` if you need to query the API directly.
+10. **AGENTS.md says "This is NOT the Next.js you know"** — Next 16 has breaking changes. Read `node_modules/next/dist/docs/` before writing route handlers, middleware, server actions, etc. The font docs are at `node_modules/next/dist/docs/01-app/01-getting-started/13-fonts.md`.
+11. **TypeScript installed at 5.9.3** (resolved from `^5` in scaffold's package.json). HANDOFF originally said 5.7.3. 5.9.3 satisfies "NOT 6" — leave it unless something breaks.
+12. **JetBrains Mono replaces Geist Mono** for numerics — NOT a Geist Mono swap left over for later. Permanent per DESIGN_SPEC §3.
+13. **Vercel env vars are empty.** Don't pre-populate placeholders — set values with their actual wiring tickets so we don't end up with stale empty-string vars hanging around.
 
-## Vercel state (open)
+## Vercel state (live)
 
-THS-1's done-criteria says "Empty dashboard route renders in dark theme on a Vercel preview URL." That requires linking the GitHub repo to Vercel. Two options:
-
-**Option A — Vercel CLI:** `cd /Users/terryturner/Projects/thesis && vercel link` (Terry logs in once via browser). Then every push to a feature branch auto-deploys a preview.
-
-**Option B — Vercel web UI (Terry's hands):**
-1. Open <https://vercel.com/new>
-2. "Import Git Repository" → search `terry-zero-in/thesis`
-3. Import → keep defaults (framework: Next.js detected, root: /, build: `pnpm build`)
-4. Deploy
-
-Either way, Terry needs to authorize the Vercel-GitHub app for the new private repo (one-time browser step).
+- ✅ Project linked: `terry-8893s-projects/thesis`
+- ✅ GitHub auto-deploy connected to `terry-zero-in/thesis`
+- ✅ First deploy: `dpl_7Xi7ttkBsNF9dJGdy116XruRHTHR` at `https://thesis-nu.vercel.app`
+- ⏳ Env vars: empty. Add per ticket — DO NOT pre-populate placeholders.
+- ⏳ Custom domain: not yet configured (deferred to THS-14 deploy).
 
 ## Supabase state (deferred to THS-2)
 
-- No `supabase init` yet
-- No `supabase start` yet (Docker is running, ready when needed)
-- Cloud Supabase Pro project: NOT YET CREATED (deferred to step 14 deploy — Phase 1 dev is local-only)
+- ❌ No `supabase init` yet
+- ❌ No `supabase start` yet (Docker is running, ready when needed)
+- ❌ Cloud Supabase Pro project NOT YET CREATED (deferred to step 14 deploy — Phase 1 dev is local-only)
 
 ## Memory rules touched this session
 
-- **Added:** `feedback_linear_mcp_responsibility.md` — Claude operates Linear via MCP; explicit clicks for Terry on UI-only steps
-- **MEMORY.md index:** added one line under Feedback section
+- **Updated:** `project_thesis.md` — locked tokens swapped to DESIGN_SPEC values. Brand "AI Thesis" + "Investment OS" recorded. Macro strip curation recorded. THS-1 status updated to merged.
+- **No new feedback rules** added this session.
+
+## Onboarding packet for parallel Claude Chat
+
+Bundled at `~/Documents/AI-Thesis-Onboarding-Packet-2026-04-28.zip` (1.3 MB):
+- 00-START-HERE.md — framing + locked rules + sanity check
+- 01-design/ — DESIGN_SPEC.md + thesis-design-system.css
+- 02-handoff/ — HANDOFF.md + PROGRESS.md (snapshot at session-end)
+- 03-repo/ — README.md + env.example.txt
+- screenshots/ — 4 CleanShot images
+
+When updates are made to DESIGN_SPEC or HANDOFF, regenerate the packet so Chat has the current state.
 
 ---
 
 ## Continuation note for Terry to paste to next Claude
 
-> Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full session context, locked decisions, and your first 5 tasks. Do NOT run `create-next-app` or write any UI/CSS until Terry has shared his exact theme + formatting references — work is paused mid-THS-1 awaiting them.
+> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full context, locked decisions, and your first 5 tasks. THS-1 is merged at `94e622f`, live at https://thesis-nu.vercel.app — start with THS-2 (Supabase schema + RLS per blueprint Section D, NOT H).**

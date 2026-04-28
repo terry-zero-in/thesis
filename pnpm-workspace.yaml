@@ -1,0 +1,4 @@
+# Single-package workspace.
+# Reserved for splitting agents/parsers into separate packages in later phases.
+packages:
+  - .

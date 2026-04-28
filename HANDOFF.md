@@ -1,8 +1,8 @@
 # Thesis — Session Handoff
 
 **Session date:** 2026-04-28 (continued)
-**Closing Claude:** Code #202_04.28.2026 (06-042826), row `b0a7f950-c537-4e3b-b7c4-188014984f9f`
-**Status at close:** THS-2 SHIPPED + merged. THS-3 in progress at WIP commit `0fd5152` on `ths-3-auth` (not pushed).
+**Closing Claude:** Code #206_04.28.2026 (10-042826), row `48fb06c3-1df6-4b56-a0ee-4334866023d9`
+**Status at close:** THS-3 SHIPPED. PR #3 open against `main`, Linear → In Review. Awaiting Terry's merge.
 
 ---
 
@@ -22,23 +22,17 @@
 
 ```
 main branch:    9142315 — THS-2 merged (Supabase schema + RLS, all 23 tables)
-                          ├─ supabase/migrations/20260428111056_initial_schema.sql
-                          ├─ supabase/config.toml
-                          ├─ types/supabase.ts (1410 lines, all 23 tables typed)
-                          └─ deps: @supabase/supabase-js@2.104.1, @supabase/ssr@0.10.2
-                                   pnpm.onlyBuiltDependencies: ["supabase"]
 
-ths-3-auth:     0fd5152 — WIP, NOT pushed, NO PR opened yet
-                          ├─ shadcn 4.5.0 init: components.json, lib/utils.ts
-                          ├─ globals.css: HANDOFF token mapping in :root
-                          │              (light-mode + .dark blocks removed)
-                          ├─ components/ui/{button,input,label}.tsx (shadcn primitives,
-                          │                                          @base-ui/react)
-                          ├─ app/tokens/page.tsx: shadcn primitives Section added
-                          ├─ lib/supabase/client.ts (createBrowserClient<Database>)
-                          ├─ lib/supabase/server.ts (createServerClient<Database>,
-                          │                          async cookies() per Next 16)
-                          └─ lib/supabase/proxy.ts (updateSession helper)
+ths-3-auth:     49b1221 — feat(THS-3): magic-link auth + protected proxy + sign-in/sign-out
+                          [PUSHED · PR #3 OPEN · LINEAR → IN REVIEW]
+                  +─ proxy.ts at repo root (Next 16, not middleware.ts)
+                  +─ app/login/{page,login-form,actions}.tsx (useActionState form)
+                  +─ app/auth/callback/route.ts (PKCE exchange, allow-listed ?next=)
+                  +─ app/page.tsx (auth-aware redirect)
+                  +─ app/dashboard/page.tsx (getUser defense + sign-out treatment)
+                  +─ lib/auth/actions.ts (signOut server action)
+                  +─ supabase/config.toml (additional_redirect_urls FIX)
+                  +─ HANDOFF gotchas 19+20, inbucket → Mailpit naming sweep
 ```
 
 **Stack pinned (current state):**
@@ -52,7 +46,7 @@ tailwindcss         4.2.4
 @supabase/supabase-js   2.104.1   ✅ THS-2
 @supabase/ssr           0.10.2    ✅ THS-2
 
-shadcn                  4.5.0     ✅ THS-3 (partial)
+shadcn                  4.5.0     ✅ THS-3
 @base-ui/react          1.4.1     ✅ THS-3 (Radix successor used by shadcn 4.x)
 class-variance-authority 0.7.1    ✅ THS-3
 clsx                    2.1.1     ✅ THS-3
@@ -67,66 +61,46 @@ lucide-react            1.11.0    ✅ THS-3
 
 ```bash
 cd /Users/terryturner/Projects/thesis
-git checkout ths-3-auth && git status   # should be clean, on ths-3-auth, at 0fd5152
-git log -3 --oneline                    # confirm 0fd5152 is HEAD on this branch
-gh pr list                              # should be empty (no PR open yet for THS-3)
-supabase status                         # confirm local stack still up; if not, supabase start
+git fetch --all
+gh pr view 3                          # PR status — open / merged / changes requested
+git status                            # confirm state of working tree + current branch
+git log -3 --oneline                  # confirm head = 49b1221 on ths-3-auth (or merged on main)
+supabase status                       # confirm local Supabase running. If not, supabase start
 ```
 
-Then via Linear MCP: confirm THS-3 is **In Progress**. If anything looks off, surface to Terry before proceeding.
+Then via Linear MCP confirm THS-3 state. **If `gh pr view 3` shows merged, jump to step 2. If open with no review comments, ask Terry whether to wait for review or proceed to THS-4 prep on a separate branch. If comments exist, address them on `ths-3-auth` before anything else.**
 
-### 2. Build `proxy.ts` at the repo root
+### 2. Post-merge cleanup (only if PR #3 is merged)
 
-Next 16 renamed `middleware.ts` to **`proxy.ts`** and the export is `proxy` not `middleware`. (Source: `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`.)
-
-`proxy.ts` wraps `updateSession` from `lib/supabase/proxy.ts` (already written) and implements Terry's locked routing decision:
-
-- PUBLIC: `/login`, `/auth/callback`
-- PROTECTED: everything else
-- Unauthenticated request to a protected path → 307 redirect to `/login`
-- Authenticated request to `/login` → 307 redirect to `/dashboard`
-
-Use the canonical Next 16 matcher that excludes `_next/static`, `_next/image`, `favicon.ico`, etc. Verify by hitting all 5 routes (see step 5 test matrix).
-
-### 3. Build `/login` page + magic-link server action
-
-`app/login/page.tsx` — server component, dark-themed minimal layout (single card, brand wordmark above it). Uses shadcn `Label`, `Input`, `Button` (already installed). Server action calls:
-
-```ts
-await supabase.auth.signInWithOtp({
-  email,
-  options: { emailRedirectTo: `${origin}/auth/callback` }
-});
+```bash
+git checkout main
+git pull origin main                  # main now has THS-3 squash-merge
+git branch -D ths-3-auth              # local cleanup; remote branch GitHub auto-deletes on squash-merge
 ```
 
-After submit, swap the form for a "Check your email" success state in the same card. Don't redirect — the magic link arrives by email and the click brings the user back via `/auth/callback`.
+Update Linear THS-3 → Done with merged commit hash. Confirm Vercel auto-deploy of main succeeded at <https://thesis-nu.vercel.app> and the magic-link flow works against the deployed instance — the deployed Supabase project doesn't exist yet (deferred to THS-14), so production auth will fail by design until then; deployed `/login` should still render correctly.
 
-### 4. Build `/auth/callback` + update `/` + sign-out helper
+### 3. Start THS-4 — Sidebar + topnav + ⌘K
 
-- `app/auth/callback/route.ts` — Route Handler. Reads `code` from `request.nextUrl.searchParams`, calls `supabase.auth.exchangeCodeForSession(code)`. On success, `redirect('/dashboard')`. On failure, `redirect('/login?error=auth_callback_failed')`.
-- `app/page.tsx` — server component. Reads session via `lib/supabase/server.ts`. Authed → `redirect('/dashboard')`. Unauth → `redirect('/login')`. Render nothing.
-- Sign-out server action — put it at `lib/auth/actions.ts` or inline on `/dashboard`. Calls `supabase.auth.signOut()` then `redirect('/login')`. Wire a temporary "Sign out" Button on the `/dashboard` placeholder so step 5 can test it.
+```bash
+git checkout -b ths-4-shell
+```
 
-### 5. Test → commit → push → PR → Linear
+Move Linear THS-4 → In Progress via MCP.
 
-**Middleware redirect matrix (unauth):**
-- GET `/` → 307 → `/login`
-- GET `/dashboard` → 307 → `/login`
-- GET `/tokens` → 307 → `/login`
-- GET `/login` → 200
-- GET `/auth/callback` (no code) → 200 (or 307 to `/login?error=...` is also acceptable)
+**Read first, before any code:** `docs/design/DESIGN_SPEC.md` sections covering app shell (sidebar, topnav, command palette) — DESIGN_SPEC is the authoritative source. Also re-skim the 4 CleanShot screenshots and 2 HTML mockups in `docs/design/` to lock in the visual target.
 
-**Magic-link E2E against local Mailpit:**
-- POST `/login` with email → form switches to success state
-- Open `http://127.0.0.1:54324` (Supabase CLI's local mail UI; renamed from inbucket to Mailpit in a recent CLI release — same port, same purpose), find the magic-link email, click the link
-- Lands on `/dashboard` authenticated. Reload — still authenticated.
-- GET `/login` while authed → 307 → `/dashboard`
+### 4. Build the app shell layout
 
-**Sign-out:**
-- Click sign-out button on `/dashboard` → redirects to `/login`
-- Subsequent GET `/dashboard` → 307 → `/login`
+`app/(app)/layout.tsx` — wraps protected routes with sidebar + topnav. Server component. Reads user via `supabase.auth.getUser()` (defense-in-depth, even though `proxy.ts` already gates). Move `app/dashboard/page.tsx` and any other authed routes under `app/(app)/`. `/login` and `/auth/callback` stay outside the group so they render without the shell.
 
-After tests pass: `git add` specific files, commit, `git push -u origin ths-3-auth`, `gh pr create --base main --title "THS-3: Magic-link auth + protected middleware + sign-in"`. Move Linear THS-3 → **In Review** with the PR link.
+Sidebar items per blueprint Section L navigation (watchlist, memos, triggers, decisions, alerts, settings — all stub links for THS-4). Active-state styling per DESIGN_SPEC. Macro strip in topnav (8 tickers: SPX · NDX · RUT · VIX · US10Y · DXY · WTI · GOLD — placeholder values until THS-6 wires real data).
+
+### 5. Build the ⌘K command palette MVP
+
+shadcn primitives: `npx shadcn add command dialog`. Static command list for THS-4 (Open Watchlist, Open Memos, Sign Out, etc.) — wiring real navigation actions, real data deferred to later tickets. Keyboard shortcut: ⌘K opens, ESC closes, ↑↓ navigates, Enter executes. Test: open palette, search, navigate, execute Sign Out → lands on `/login`.
+
+Then commit, push, open PR per the same workflow as THS-3. **THS-4 is Perplexity Checkpoint #1 — STOP after THS-4 merges, do not proceed to THS-5 until Perplexity grades against the blueprint.**
 
 ---
 
@@ -134,57 +108,39 @@ After tests pass: `git add` specific files, commit, `git push -u origin ths-3-au
 
 | Route | Purpose | Notes |
 |---|---|---|
-| `/` | Brand wordmark placeholder ("AI Thesis" · "Investment OS") | Will become auth-aware redirect in THS-3 |
-| `/dashboard` | THS-1 acceptance placeholder | Real shell ships in THS-4 |
-| `/tokens` | Design system regression page | Now includes a "shadcn primitives" section (THS-3 WIP) showing all 5 Button variants + email Input + Label |
+| `/` | Auth-aware redirect | Authed → `/dashboard`, unauth → `/login`. No render. |
+| `/login` | Magic-link sign-in | useActionState three states (idle / error / success). Renders DESIGN_SPEC tokens. |
+| `/auth/callback` | PKCE code exchange | exchangeCodeForSession + allow-listed `?next=`. Errors redirect to `/login?error=...`. |
+| `/dashboard` | THS-1 acceptance placeholder | getUser defense + inline "Signed in as `email` · Sign out" treatment. Real shell ships in THS-4. |
+| `/tokens` | Design system regression page | Includes the shadcn primitives section added in THS-3. |
 
-`https://thesis-nu.vercel.app` reflects `main` (THS-2). The `ths-3-auth` branch is local-only.
-
----
-
-## Where THS-3 paused
-
-Linear THS-3 → **In Progress**. Branch `ths-3-auth` exists at `0fd5152` (one WIP commit), no PR open.
-
-**Already landed in the WIP commit:**
-- shadcn init + token mapping replaced (HANDOFF mapping respected, including the `--accent` → `--surface-hover` trap)
-- shadcn primitives installed and visually verified on `/tokens`
-- Supabase SSR client utilities written (`client.ts`, `server.ts`, `proxy.ts`)
-- Next 16 docs read end-to-end for `proxy` + `cookies` + `authentication`
-
-**Pending pieces of THS-3 (not yet started):**
-- `proxy.ts` at repo root — wraps `updateSession` from `lib/supabase/proxy.ts`, then implements the protected/public routing decision tree
-- `app/login/page.tsx` — magic-link form using shadcn Button/Input/Label, server action calls `supabase.auth.signInWithOtp({ email, options: { emailRedirectTo } })`
-- `app/auth/callback/route.ts` — Route Handler that calls `exchangeCodeForSession(code)` then redirects to `/dashboard`
-- `app/page.tsx` — server component, reads session, redirects to `/dashboard` (authed) or `/login` (unauth). No content render
-- Sign-out server action — calls `supabase.auth.signOut()` then `redirect('/login')`. Wired to a button on `/dashboard` placeholder for testability
-- Middleware redirect-matrix test (5 unauth routes + authed `/login`)
-- End-to-end magic-link flow against local Mailpit (`http://127.0.0.1:54324` — formerly inbucket)
-- Sign-out flow test
-- Commit, push, open PR, move Linear → In Review
+`https://thesis-nu.vercel.app` reflects `main` (THS-2). `ths-3-auth` lives on origin pending PR #3 merge.
 
 ---
 
 ## Locked decisions (do not relitigate without Terry's explicit override)
 
-### THS-3 (locked 2026-04-28 — current session)
+### THS-3 (locked + shipped 2026-04-28)
 
-- **Sign-in route:** `/login` (override of /sign-in default). Source: Linear THS-3 description says "/app/login page" explicitly. Rule: Linear ticket text is the source of truth for routes/copy; drift requires Terry override.
-- **Post-magic-link redirect:** `/dashboard`
-- **Protected scope:** gate everything except `/login` + `/auth/callback`. `/` redirects to `/dashboard` if authed, `/login` if not
-- **Signup gating:** none in dev. RLS bubble is the defense. Allow-list lockdown deferred to THS-14 deploy
-- **Single-user, magic-link only.** No password, no signup form, no OAuth
-- **shadcn token mapping:** site is always dark, single `:root` block (no `.dark` toggle). HANDOFF table mapping respected verbatim. shadcn `--accent` → `--surface-hover` (NOT brand `--accent`)
-- **Components installed:** button, input, label only (no extra primitives in THS-3)
+- **`proxy.ts` is routing UX only.** Defense-in-depth: every protected component calls `supabase.auth.getUser()` at the data-access boundary. RLS is the final wall. Auth is NOT trusted from `proxy.ts` alone — the March 2025 middleware-subrequest CVE motivated Next's rename, and the ecosystem is steering away from "auth lives in middleware."
+- **Next.js 16 runtime for `proxy.ts` = Node.js (not edge).** Edge runtime is not supported in Proxy. If a future ticket needs edge execution, that's a separate architectural decision.
+- **PKCE flow only.** `@supabase/ssr` defaults to PKCE. Implicit flow (`#hash` tokens) is never used.
+- **Sign-in route:** `/login` (override of `/sign-in` default). Source: Linear THS-3 description text.
+- **Public paths:** `/login` + `/auth/callback`. Everything else gated.
+- **Single-user, magic-link only.** No password, no signup form, no OAuth.
+- **shadcn token mapping:** site is always dark, single `:root` block (no `.dark` toggle). HANDOFF table mapping respected verbatim. shadcn `--accent` → `--surface-hover` (NOT brand `--accent`).
+- **`?next=` allow-list (in `app/auth/callback/route.ts`):** only `/dashboard` for now. New protected destinations get added explicitly — no echo of user-controlled redirect URLs.
+- **`additional_redirect_urls` must use `/**` glob.** See gotcha #19 below.
+- **Sign-out lives at `lib/auth/actions.ts`** — server action `signOut`: `signOut` → `revalidatePath("/", "layout")` → `redirect("/login")`. No confirmation modal in single-user Phase 1.
+- **No Playwright in this ticket.** Test infra (Playwright, Cypress, MSW) is a discrete decision with its own ticket. Per HANDOFF stack list, vitest is the only test framework currently approved. Anything beyond that requires Terry's explicit OK.
 
 ### THS-2 (locked 2026-04-28 — landed at `9142315`)
 
 - Schema source-of-truth = blueprint **Section D**, not Section H (Section H is "Retool vs Custom App")
 - All 23 Section D tables. Section D names exclusively (`watchlist_tickers`, `investment_memos`, `audit_logs` — plural)
 - No `cost_events` table. Cost tracking via `agent_outputs.cost_usd` + `audit_logs.metadata` JSONB
-- RLS on every table (23). 17 user-owned via `auth.uid() = user_id` with EXISTS-subquery on six child tables (`watchlist_tickers`, `agent_outputs`, `memo_versions`, `trigger_events`, `decision_logs`, `thesis_checkpoints`). 6 public-read with `SELECT USING (true)`
+- RLS on every table (23). 17 user-owned via `auth.uid() = user_id` with EXISTS-subquery on six child tables
 - `(SELECT auth.uid())` wrap per Supabase performance guidance
-- `workflow_runs` has no `user_id` per Section D — Phase 1 single-user permissive policy; tighten in Phase 5
 - `handle_new_auth_user()` SECURITY DEFINER trigger on `auth.users` syncs new signups to `public.users`
 - Two-user RLS isolation test passes 11/11
 
@@ -200,13 +156,13 @@ tailwindcss         4.2.4  ✅ installed
 @supabase/ssr        0.10.2 ✅ THS-2
 shadcn               4.5.0  ✅ THS-3
 @base-ui/react       1.4.1  ✅ THS-3
-zod                  3.25.x — install in THS-3 form work (NOT 4 — RHF peer-range chaos)
+zod                  3.25.x — install in THS-3+ form work (NOT 4 — RHF peer-range chaos)
 inngest              4.2.4  — install in THS-9
 @anthropic-ai/sdk    0.91.0 — install in THS-7
 @tanstack/react-table 8.21.3 — install in THS-5/6
 recharts             3.8.1  — install in THS-6
 @tremor/react        3.18.7 (note: Tremor OSS in maintenance mode; may swap for shadcn/charts)
-react-hook-form      7.73.1 — install in THS-3 form work
+react-hook-form      7.73.1 — install in THS-3+ form work
 @hookform/resolvers  5.x    — with RHF
 react-markdown       10.1.0 — install in THS-10
 rehype-highlight     7.0.2  — with markdown
@@ -222,15 +178,13 @@ prettier             3.8.3  ✅ installed
 
 `docs/design/DESIGN_SPEC.md` is the source of truth. Read it before any UI work.
 
-**Tokens (LOCKED — supersedes all prior):**
+**Tokens (LOCKED):**
 - bg `#0A0B0E` (canvas + sidebar merged into single plane)
 - surface `#14161B` · surface-2 `#1A1D24` · surface-hover `#1F232B`
 - border `#232730` · border-subtle `#1A1D24`
 - text-1 `#F0F1F3` · text-2 `#9298A3` · text-3 `#5F6571`
 - accent `#4D5BFF` · accent-soft `rgba(77,91,255,.12)` · accent-hover `#6573FF`
 - success `#4FB87A` · warning `#DDA84F` · danger `#E26B6B` · info `#5B8FFF` (each with `*-soft` 12% alpha pair)
-
-**OLD tokens are RETIRED:** if you see references to `#121415 / #2E5BFF / #3FB950 / #F0B72F / #E5484D / #8b5cf6` anywhere in old conversations or stale docs, IGNORE them. Use the locked set above.
 
 **Brand:** "AI Thesis" wordmark (text-only, no icon) + "Investment OS" product label in topbar.
 **Macro strip (curated 8):** SPX · NDX · RUT · VIX · US10Y · DXY · WTI · GOLD.
@@ -257,22 +211,22 @@ prettier             3.8.3  ✅ installed
 - **PR title format:** `THS-N: <title>` so Linear auto-links.
 - **Linear state machine:** Todo → In Progress (work starts) → In Review (PR opens) → Done (after merge).
 - **Linear MCP:** Claude operates Linear via MCP for everything. UI-only steps require explicit click-by-click instructions for Terry.
-- **Cloud paste discipline:** migrations + auth SQL run **locally only** via `supabase db reset` against the Docker stack. Cloud paste happens only at THS-14 deploy when the actual Thesis Supabase Pro project is created. (Terry historically pastes SQL into a single Fontera Supabase scratchpad — a Thesis migration was inadvertently pasted there during THS-2; a surgical rollback dropped all 23 Thesis tables + the `handle_new_auth_user` function. Fontera's own `handle_new_user` was untouched. Lesson: never paste THS-N migrations into Fontera.)
+- **Cloud paste discipline:** migrations + auth SQL run **locally only** via `supabase db reset` against the Docker stack. Cloud paste happens only at THS-14 deploy when the actual Thesis Supabase Pro project is created. (During THS-2, a Thesis migration was inadvertently pasted into Fontera Supabase scratchpad; surgical rollback dropped all 23 Thesis tables + the `handle_new_auth_user` function. Lesson: never paste THS-N migrations into Fontera.)
 
 ### Build order to Perplexity Checkpoint #1
 
-THS-1 ✅ → THS-2 ✅ → THS-3 (in progress) → THS-4. **Stop after THS-4 merges.** Perplexity grades against the blueprint, then unblocks THS-5+.
+THS-1 ✅ → THS-2 ✅ → THS-3 ✅ (in review) → THS-4. **Stop after THS-4 merges.** Perplexity grades against the blueprint, then unblocks THS-5+.
 
 - **THS-1:** ✅ Done — scaffold + tokens + Geist + ESLint/Prettier + `/tokens` page + `/dashboard` placeholder. Live at https://thesis-nu.vercel.app.
 - **THS-2:** ✅ Done — full Section D schema + RLS at `9142315`.
-- **THS-3:** 🟡 In Progress at `0fd5152` (WIP commit on `ths-3-auth`). Magic-link auth + protected `proxy.ts` + sign-in page + shadcn init.
-- **THS-4:** Sidebar + topnav + ⌘K command palette.
+- **THS-3:** ✅ SHIPPED — magic-link auth + proxy.ts + /login + /auth/callback + sign-out. PR #3 in review at `49b1221`.
+- **THS-4:** ⬜ Sidebar + topnav + ⌘K command palette. **Perplexity Checkpoint #1.**
 
 Four Perplexity checkpoints across the whole Phase 1 build: after THS-4, after step 7 (first memo end-to-end), after step 11 (approval flow), and pre-prod (step 14).
 
-### shadcn token mapping (already executed in THS-3 WIP)
+### shadcn token mapping (executed in THS-3)
 
-shadcn 4.5.0 init landed in THS-3. The HANDOFF mapping was applied verbatim to `app/globals.css` `:root` block. `.dark` block was removed (site always dark). Pre-locked mapping reference:
+shadcn 4.5.0 init landed in THS-3 (commit `0fd5152`, now part of `49b1221`). Mapping applied verbatim to `app/globals.css` `:root` block. `.dark` block was removed (site always dark). Reference:
 
 | shadcn token | Our token | Hex / Value |
 |---|---|---|
@@ -309,7 +263,7 @@ shadcn 4.5.0 init landed in THS-3. The HANDOFF mapping was applied verbatim to `
 | Local Supabase stack | ✅ `supabase start` running | Docker required. Studio at http://127.0.0.1:54323. Mailpit (auth emails — formerly inbucket, renamed in recent CLI release; same port/purpose) at http://127.0.0.1:54324. DB at port 54322 |
 | Vercel CLI | ✅ 52.0.0 | logged in as `terry-8893`, project linked |
 | Docker Desktop | ✅ 4.71.0 | running |
-| Chromium (headless) | ✅ via `npx playwright install chromium` | binary at `~/Library/Caches/ms-playwright/chromium-1217/...`. NOT MCP-attached (MCP playwright wants Google Chrome at `/Applications/Google Chrome.app/`, which isn't installed). For Claude-driven screenshots, invoke the binary directly with `--headless --screenshot=...` |
+| Chromium (headless) | ✅ via `npx playwright install chromium` | binary at `~/Library/Caches/ms-playwright/chromium_headless_shell-1217/...`. NOT MCP-attached. For Claude-driven screenshots, invoke `chrome-headless-shell` directly with `--headless --screenshot=...` |
 | Inngest CLI | ⚠️ defer | use `npx inngest-cli@latest dev` at use-time |
 
 ## Gotchas
@@ -334,31 +288,34 @@ shadcn 4.5.0 init landed in THS-3. The HANDOFF mapping was applied verbatim to `
 18. **MCP Playwright wants Google Chrome** at `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`. Chromium-headless from `npx playwright install chromium` is NOT auto-discovered by the MCP server. For Claude-driven screenshots, use the chromium binary directly via Bash (`--headless --screenshot=...`). Installing real Chrome via brew/DMG would unblock MCP — sudo password required.
 19. **Supabase `additional_redirect_urls` must include the deploy origin with `/**` glob** (e.g. `http://localhost:3000/**`, `https://thesis-nu.vercel.app/**`). Silently falls back to `site_url` with no error logged when missing — magic links land on the wrong path. Re-check on every deploy URL change. Caught during THS-3: original config had only `https://127.0.0.1:3000` (https-only, no path glob), which silently broke the magic-link → `/auth/callback` redirect during E2E testing — fixed in `supabase/config.toml`.
 20. **PKCE > implicit flow for SSR-rendered apps.** `@supabase/ssr` defaults to PKCE. Anyone curl-testing the OTP REST endpoint directly (`POST /auth/v1/otp` without a `code_challenge`) will hit implicit flow — link redirects with tokens in `#hash`, not `?code=`. The hash never reaches the server-side route handler, so it looks like the callback is broken when it's actually the test that's wrong. Always test through the SDK (or the actual form), not the bare REST endpoint.
+21. **Mailpit replaced inbucket as Supabase CLI's local mail UI** in a recent release. Same port (54324), same purpose. Anywhere this HANDOFF or older docs say "inbucket" — read "Mailpit" — they are interchangeable for our purposes.
+22. **`@supabase/ssr` cookie injection from CLI is hard.** Cannot easily land a valid PKCE auth cookie into chrome-headless-shell from CLI without browser automation. macOS Keychain encryption parity blocks SQLite Cookies-file injection. Authenticated-state screenshots require Playwright (out of scope per stack-list rule) or manual browser verification.
 
 ## Vercel state (live)
 
 - ✅ Project linked: `terry-8893s-projects/thesis`
 - ✅ GitHub auto-deploy connected to `terry-zero-in/thesis`
-- ✅ Latest deploy reflects `main` at `9142315` (THS-2)
+- ✅ Latest deploy reflects `main` at `9142315` (THS-2). On THS-3 merge, `49b1221` will auto-deploy.
 - ⏳ Env vars: empty. Add per ticket — DO NOT pre-populate placeholders.
 - ⏳ Custom domain: not yet configured (deferred to THS-14 deploy).
 
 ## Supabase state
 
 - ✅ Local Docker stack running, schema applied at `9142315`. All 23 tables present, RLS verified.
+- ✅ `supabase/config.toml` `additional_redirect_urls` corrected to `localhost:3000/**` + `127.0.0.1:3000/**` glob. Restart required after edits — `supabase stop && supabase start`.
 - ❌ Cloud Supabase Pro project NOT YET CREATED (deferred to step 14 deploy — Phase 1 dev is local-only).
 
 ## Memory rules touched this session
 
-- **Updated:** `project_thesis.md` — THS-2 marked shipped (`9142315`); THS-3 marked partial at `0fd5152`. Token mapping notes carried.
+- **Updated:** `project_thesis.md` will reflect THS-3 SHIPPED at PR #3 / `49b1221`.
 - **No new feedback rules added.**
 
 ## Onboarding packet for parallel Claude Chat
 
-`~/Documents/AI-Thesis-Onboarding-Packet-2026-04-28.zip` (1.3 MB) — out of date as of this session. Regenerate when DESIGN_SPEC or HANDOFF changes materially before sharing with Chat.
+`~/Documents/AI-Thesis-Onboarding-Packet-2026-04-28.zip` (1.3 MB) — out of date as of THS-3 ship. Regenerate when DESIGN_SPEC or HANDOFF changes materially before sharing with Chat.
 
 ---
 
 ## Continuation note for Terry to paste to next Claude
 
-> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/`. THS-1 + THS-2 are merged on `main` (latest `9142315`). THS-3 is mid-flight: branch `ths-3-auth` at WIP commit `0fd5152` (not pushed). Pending pieces of THS-3 are described in HANDOFF "Where THS-3 paused" — check `git log` and `git status` to confirm state, then ask Terry which piece to take next.**
+> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full context, locked decisions, and your first 5 tasks. THS-1 + THS-2 are merged on `main`. THS-3 is SHIPPED on `ths-3-auth` at `49b1221` — PR #3 (https://github.com/terry-zero-in/thesis/pull/3) is open against main with Linear THS-3 → In Review. Start with task 1 (sanity check `gh pr view 3` to determine state), then either address review feedback OR move to THS-4 prep depending on PR status.**

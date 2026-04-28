@@ -10,7 +10,7 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 |---|---|---|---|---|
 | THS-1 | Scaffold Next.js repo + design tokens | ✅ Done 2026-04-28 | [#1](https://github.com/terry-zero-in/thesis/pull/1) | Squash-merged at `94e622f`. Live at https://thesis-nu.vercel.app. shadcn init deferred to THS-3. |
 | THS-2 | Supabase schema + RLS | ✅ Done 2026-04-28 | [#2](https://github.com/terry-zero-in/thesis/pull/2) | Squash-merged at `9142315`. All 23 Section D tables, RLS on every table, 11/11 RLS isolation tests passed, types/supabase.ts generated. |
-| THS-3 | Magic-link auth + protected middleware + sign-in | 🟡 In Progress | — | Branch `ths-3-auth` at WIP `0fd5152` (NOT pushed). shadcn init done, Supabase SSR clients written. proxy.ts + /login + /auth/callback + / redirect + sign-out + tests pending. |
+| THS-3 | Magic-link auth + protected middleware + sign-in | ✅ Shipped 2026-04-28 (in review) | [#3](https://github.com/terry-zero-in/thesis/pull/3) | Branch `ths-3-auth` at `49b1221`. proxy.ts + /login + /auth/callback + / + dashboard defense + sign-out all landed. supabase/config.toml redirect-allowlist fix included. Awaiting Terry's merge. |
 | THS-4 | Sidebar + topnav + ⌘K palette | ⬜ Todo | — | **Perplexity Checkpoint #1 stops here.** Don't proceed to THS-5 until Perplexity unblocks. |
 | THS-5 | Watchlist CRUD | ⬜ Todo | — | |
 | THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | — | |
@@ -44,6 +44,47 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 ---
 
 ## Sessions
+
+### Session 2026-04-28 (Claude Code #206_04.28.2026 — THS-3 ship)
+
+**Focus:** Land THS-3 end-to-end (magic-link auth + protected proxy + sign-in/sign-out) and open PR for review.
+
+**Done — THS-3:**
+- `proxy.ts` at repo root (Next 16 routing layer; not `middleware.ts`). Wraps `updateSession` from `lib/supabase/proxy.ts`. Public paths: `/login` + `/auth/callback`. Authed → `/login` redirects to `/dashboard`; unauth → protected redirects to `/login`. Copies rotated supabase cookies onto redirect responses per `@supabase/ssr` guidance.
+- `app/login/page.tsx` + `login-form.tsx` + `actions.ts`: server component redirects authed → `/dashboard`, client form uses React 19 `useActionState` for three states (idle / error / success), server action `signInWithMagicLink` validates email + calls `signInWithOtp` with `emailRedirectTo` `/auth/callback?next=/dashboard`.
+- `app/auth/callback/route.ts`: `exchangeCodeForSession` + allow-listed `?next=` validation. Errors redirect to `/login?error=...`.
+- `app/page.tsx`: auth-aware redirect, no render.
+- `app/dashboard/page.tsx`: `getUser()` defense + inline `Signed in as <email> · Sign out` treatment with `--text-2` on the sign-out control.
+- `lib/auth/actions.ts`: `signOut` server action — `signOut` → `revalidatePath("/", "layout")` → `redirect("/login")`.
+- **Real find caught + fixed:** `supabase/config.toml` `additional_redirect_urls` was `["https://127.0.0.1:3000"]` only (https-only, no path glob, no `localhost`). Supabase silently falls back to `site_url` with no error logged — magic links would have landed on the wrong path. Fixed with `http://localhost:3000/**` + `http://127.0.0.1:3000/**`. Documented as HANDOFF gotcha 19. PKCE vs implicit-flow distinction documented as gotcha 20.
+- HANDOFF.md + PROGRESS.md inbucket → Mailpit naming (Supabase CLI swapped UIs in a recent release).
+- PR #3 opened against `main` at `49b1221`. Linear THS-3 → In Review with PR link attached.
+
+**Verification:**
+- `pnpm tsc --noEmit` clean
+- `pnpm build` (Turbopack) clean — route table shows `/`, `/auth/callback`, `/dashboard`, `/login`, `/tokens`, `/_not-found` + `Proxy (Middleware)`. No edge-runtime errors.
+- Unauth redirect matrix passes for all 5 routes (curl)
+- `/login` renders per DESIGN_SPEC tokens (1440×900 chromium-headless screenshot)
+- Magic-link → callback → `/dashboard` (authed, email displayed) → sign-out → `/login` round-trip verified manually in Terry's browser
+
+**Decisions made:**
+- `proxy.ts` is routing UX only — defense-in-depth via `supabase.auth.getUser()` at every protected component boundary, RLS as the final wall.
+- Next 16 runtime for `proxy.ts` = Node.js (edge runtime not supported in Proxy).
+- Sign-out lives at `lib/auth/actions.ts` (not co-located on /dashboard) — reusable when other pages need it later.
+- No Playwright in this ticket. Stack additions outside the locked HANDOFF list are discrete tickets, not feature-ticket sneak-ins.
+- `?next=` allow-list (currently only `/dashboard`) — no echo of user-controlled redirect URLs.
+- PKCE > implicit flow — `@supabase/ssr` defaults correctly; bare REST OTP testing is misleading because it hits implicit flow.
+
+**Carrying forward — THS-4 next:**
+- Sidebar + topnav + ⌘K command palette per blueprint Section L navigation.
+- App shell layout at `app/(app)/layout.tsx` (route group), wraps protected routes.
+- ⌘K via shadcn `command` + `dialog` primitives (need to add). Static command list for THS-4.
+- **Perplexity Checkpoint #1 stops here** — do not proceed to THS-5 until Perplexity grades against the blueprint.
+
+**Key gotchas surfaced this session:**
+- Supabase `additional_redirect_urls` requires `/**` glob; silently falls back to `site_url` if missing. Re-check on every deploy URL change. (Gotcha 19.)
+- PKCE flow is what `@supabase/ssr` uses; the bare OTP REST endpoint defaults to implicit flow. Always test through the SDK or actual form. (Gotcha 20.)
+- `@supabase/ssr` PKCE auth cookies cannot be injected into chrome-headless-shell from CLI without browser automation. Authenticated-state screenshots require manual browser verification or Playwright. (Gotcha 22.)
 
 ### Session 2026-04-28 (Claude Code #202_04.28.2026 — THS-2 ship + THS-3 partial)
 

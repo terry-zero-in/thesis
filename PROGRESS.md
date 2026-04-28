@@ -9,8 +9,8 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 | Ticket | Title | Status | PR | Notes |
 |---|---|---|---|---|
 | THS-1 | Scaffold Next.js repo + design tokens | ✅ Done 2026-04-28 | [#1](https://github.com/terry-zero-in/thesis/pull/1) | Squash-merged at `94e622f`. Live at https://thesis-nu.vercel.app. shadcn init deferred to THS-3. |
-| THS-2 | Supabase schema + RLS | 🟢 Ready | — | Schema in blueprint **Section D** (NOT Section H — that's Retool vs Custom App). Next session starts here. |
-| THS-3 | Magic-link auth + protected middleware + sign-in | ⬜ Todo | — | Single-user. No email/password. |
+| THS-2 | Supabase schema + RLS | ✅ Done 2026-04-28 | [#2](https://github.com/terry-zero-in/thesis/pull/2) | Squash-merged at `9142315`. All 23 Section D tables, RLS on every table, 11/11 RLS isolation tests passed, types/supabase.ts generated. |
+| THS-3 | Magic-link auth + protected middleware + sign-in | ✅ Shipped 2026-04-28 (in review) | [#3](https://github.com/terry-zero-in/thesis/pull/3) | Branch `ths-3-auth` at `49b1221`. proxy.ts + /login + /auth/callback + / + dashboard defense + sign-out all landed. supabase/config.toml redirect-allowlist fix included. Awaiting Terry's merge. |
 | THS-4 | Sidebar + topnav + ⌘K palette | ⬜ Todo | — | **Perplexity Checkpoint #1 stops here.** Don't proceed to THS-5 until Perplexity unblocks. |
 | THS-5 | Watchlist CRUD | ⬜ Todo | — | |
 | THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | — | |
@@ -44,6 +44,95 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 ---
 
 ## Sessions
+
+### Session 2026-04-28 (Claude Code #206_04.28.2026 — THS-3 ship)
+
+**Focus:** Land THS-3 end-to-end (magic-link auth + protected proxy + sign-in/sign-out) and open PR for review.
+
+**Done — THS-3:**
+- `proxy.ts` at repo root (Next 16 routing layer; not `middleware.ts`). Wraps `updateSession` from `lib/supabase/proxy.ts`. Public paths: `/login` + `/auth/callback`. Authed → `/login` redirects to `/dashboard`; unauth → protected redirects to `/login`. Copies rotated supabase cookies onto redirect responses per `@supabase/ssr` guidance.
+- `app/login/page.tsx` + `login-form.tsx` + `actions.ts`: server component redirects authed → `/dashboard`, client form uses React 19 `useActionState` for three states (idle / error / success), server action `signInWithMagicLink` validates email + calls `signInWithOtp` with `emailRedirectTo` `/auth/callback?next=/dashboard`.
+- `app/auth/callback/route.ts`: `exchangeCodeForSession` + allow-listed `?next=` validation. Errors redirect to `/login?error=...`.
+- `app/page.tsx`: auth-aware redirect, no render.
+- `app/dashboard/page.tsx`: `getUser()` defense + inline `Signed in as <email> · Sign out` treatment with `--text-2` on the sign-out control.
+- `lib/auth/actions.ts`: `signOut` server action — `signOut` → `revalidatePath("/", "layout")` → `redirect("/login")`.
+- **Real find caught + fixed:** `supabase/config.toml` `additional_redirect_urls` was `["https://127.0.0.1:3000"]` only (https-only, no path glob, no `localhost`). Supabase silently falls back to `site_url` with no error logged — magic links would have landed on the wrong path. Fixed with `http://localhost:3000/**` + `http://127.0.0.1:3000/**`. Documented as HANDOFF gotcha 19. PKCE vs implicit-flow distinction documented as gotcha 20.
+- HANDOFF.md + PROGRESS.md inbucket → Mailpit naming (Supabase CLI swapped UIs in a recent release).
+- PR #3 opened against `main` at `49b1221`. Linear THS-3 → In Review with PR link attached.
+
+**Verification:**
+- `pnpm tsc --noEmit` clean
+- `pnpm build` (Turbopack) clean — route table shows `/`, `/auth/callback`, `/dashboard`, `/login`, `/tokens`, `/_not-found` + `Proxy (Middleware)`. No edge-runtime errors.
+- Unauth redirect matrix passes for all 5 routes (curl)
+- `/login` renders per DESIGN_SPEC tokens (1440×900 chromium-headless screenshot)
+- Magic-link → callback → `/dashboard` (authed, email displayed) → sign-out → `/login` round-trip verified manually in Terry's browser
+
+**Decisions made:**
+- `proxy.ts` is routing UX only — defense-in-depth via `supabase.auth.getUser()` at every protected component boundary, RLS as the final wall.
+- Next 16 runtime for `proxy.ts` = Node.js (edge runtime not supported in Proxy).
+- Sign-out lives at `lib/auth/actions.ts` (not co-located on /dashboard) — reusable when other pages need it later.
+- No Playwright in this ticket. Stack additions outside the locked HANDOFF list are discrete tickets, not feature-ticket sneak-ins.
+- `?next=` allow-list (currently only `/dashboard`) — no echo of user-controlled redirect URLs.
+- PKCE > implicit flow — `@supabase/ssr` defaults correctly; bare REST OTP testing is misleading because it hits implicit flow.
+
+**Carrying forward — THS-4 next:**
+- Sidebar + topnav + ⌘K command palette per blueprint Section L navigation.
+- App shell layout at `app/(app)/layout.tsx` (route group), wraps protected routes.
+- ⌘K via shadcn `command` + `dialog` primitives (need to add). Static command list for THS-4.
+- **Perplexity Checkpoint #1 stops here** — do not proceed to THS-5 until Perplexity grades against the blueprint.
+
+**Key gotchas surfaced this session:**
+- Supabase `additional_redirect_urls` requires `/**` glob; silently falls back to `site_url` if missing. Re-check on every deploy URL change. (Gotcha 19.)
+- PKCE flow is what `@supabase/ssr` uses; the bare OTP REST endpoint defaults to implicit flow. Always test through the SDK or actual form. (Gotcha 20.)
+- `@supabase/ssr` PKCE auth cookies cannot be injected into chrome-headless-shell from CLI without browser automation. Authenticated-state screenshots require manual browser verification or Playwright. (Gotcha 22.)
+
+### Session 2026-04-28 (Claude Code #202_04.28.2026 — THS-2 ship + THS-3 partial)
+
+**Focus:** Land THS-2 end-to-end (Supabase schema + RLS) and merge. Begin THS-3 (auth + sign-in + middleware) — paused mid-flight to save state for next session.
+
+**Done — THS-2:**
+- Surfaced and resolved a pre-flight conflict: HANDOFF.md's 11-table shorthand list disagreed with blueprint Section D's 23-table spec on table count, names (`watchlist_items`/`memos`/`audit_log` vs `watchlist_tickers`/`investment_memos`/`audit_logs`), and the existence of `cost_events`. Terry locked Section D as canonical; `cost_events` dropped; cost tracking lives on `agent_outputs.cost_usd` + `audit_logs.metadata` JSONB.
+- Wrote `supabase/migrations/20260428111056_initial_schema.sql` — 23 tables in topological order, 30+ indexes including the 5 EXISTS hot-path indexes Terry called out, `update_updated_at()` trigger attached to 12 tables that have `updated_at`, `handle_new_auth_user()` SECURITY DEFINER trigger on `auth.users` syncing new signups to `public.users`.
+- RLS ENABLED on all 23 tables: 17 user-owned with `(SELECT auth.uid()) = user_id` (EXISTS-subquery on six child tables: `watchlist_tickers`, `agent_outputs`, `memo_versions`, `trigger_events`, `decision_logs`, `thesis_checkpoints`); 6 public-read (`tickers`, `companies`, `data_sources`, `price_snapshots`, `fundamentals_snapshots`, `source_documents`) with `SELECT USING (true)`.
+- Verified locally via `supabase db reset` (Docker stack at port 54322): 23/23 tables, 23 policies, 13 triggers (12 updated_at + 1 auth-sync). Two-user RLS isolation test passed 11/11 — cross-user reads return 0, INSERTs with foreign user_id and EXISTS-protected child inserts both blocked with `42501 row-level security policy`, UPDATE on cross-user rows is no-op, anon SELECT on public-read tables works, anon writes blocked.
+- Generated `types/supabase.ts` (1410 lines, all 23 tables typed). `pnpm tsc --noEmit` clean.
+- PR #2 squash-merged at `9142315`. Linear THS-2 → Done.
+
+**Done — THS-3 (partial, on `ths-3-auth` at WIP `0fd5152`, NOT pushed):**
+- shadcn 4.5.0 init against Tailwind v4 — generated `components.json` (style: `base-nova`), `lib/utils.ts` (`cn` helper), and appended `@custom-variant dark`, `@theme inline` mapping, `:root` block, `.dark` block, and `@layer base` to `app/globals.css`.
+- Replaced shadcn's generated `:root` light-mode oklch defaults with HANDOFF.md's locked token mapping (16 named + 14 Phase 1 placeholders). Removed `.dark` block (site always dark). HANDOFF trap honored: shadcn's `--accent` mapped to `--surface-hover` (#1F232B), NOT brand `--accent` (#4D5BFF).
+- `npx shadcn add input label` — generated `components/ui/{button,input,label}.tsx`. shadcn 4.x uses `@base-ui/react` (Radix's open-source successor) instead of `@radix-ui/react-*`.
+- Visual-verified primitives on `/tokens` page via headless Chromium screenshot (chromium-1217 at `~/Library/Caches/ms-playwright/`). Button renders `--primary` blue, Input renders with `--border` outline, all 5 Button variants visible.
+- Read Next 16 docs: confirmed `middleware.ts` is **renamed to `proxy.ts`** in Next 16 (function `proxy()` not `middleware()`) and `cookies()` from `next/headers` is **async** (returns Promise). Captured both as gotchas in HANDOFF.
+- Wrote Supabase SSR utilities: `lib/supabase/client.ts` (createBrowserClient<Database>), `lib/supabase/server.ts` (createServerClient with awaited `cookies()` and Server-Component-safe try/catch on setAll), `lib/supabase/proxy.ts` (`updateSession` helper implementing the @supabase/ssr getAll/setAll cookie-rotation dance).
+
+**Carrying forward — THS-3 pending:**
+- `proxy.ts` at repo root with the protected/public routing decision tree
+- `app/login/page.tsx` + magic-link server action calling `signInWithOtp`
+- `app/auth/callback/route.ts` doing `exchangeCodeForSession`
+- `app/page.tsx` auth-aware redirect (no content render)
+- Sign-out server action wired to `/dashboard` placeholder
+- Middleware redirect-matrix test, Mailpit (formerly inbucket) E2E test, sign-out test
+- Branch push, PR creation, Linear → In Review
+
+**Decisions made:**
+- Schema source-of-truth = blueprint Section D, not Section H. HANDOFF's 11-table shorthand list is stale.
+- No `cost_events` table — agent_outputs.cost_usd + audit_logs.metadata covers Phase 1 acceptance "cost tracking present per-job + monthly KPI."
+- EXISTS-subquery RLS on child tables, no denormalized `user_id`. Single-tenant Phase 1 makes EXISTS perf cost irrelevant.
+- `(SELECT auth.uid())` wrap per Supabase performance guidance.
+- `workflow_runs` has no `user_id` per Section D — Phase 1 single-user permissive policy; tighten in Phase 5.
+- Sign-in route is `/login` (override of `/sign-in` default). Linear ticket text says "/app/login page" → ticket text wins on routes/copy.
+- Protected scope: gate everything except `/login` + `/auth/callback`. `/` redirects to `/dashboard` if authed, `/login` if not.
+- No signup gating in dev. RLS bubble is the defense; allow-list deferred to THS-14.
+- Site always dark — single `:root` block in globals.css, no `.dark` toggle, no `dark` class on `<html>`. Accept slightly less polished destructive/ghost shadcn variants.
+- Cloud paste discipline: migrations + auth SQL run **locally only** via `supabase db reset` against Docker. Cloud paste only at THS-14 deploy. (During THS-2, Terry pasted the migration into his Fontera Supabase scratchpad before realizing it should be local-only. Surgical rollback dropped the 23 Thesis tables + my `handle_new_auth_user`. Fontera's own `handle_new_user` was untouched. **Lesson: never paste THS-N migrations into Fontera.**)
+
+**Key gotchas surfaced this session:**
+- Next 16 renamed `middleware.ts` → `proxy.ts`, function `proxy()` not `middleware()`. Source: `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`. Codemod available: `npx @next/codemod@canary middleware-to-proxy .`
+- Next 16 `cookies()` is async — `await cookies()` before any `.get()/.set()`. Source: `node_modules/next/dist/docs/01-app/03-api-reference/04-functions/cookies.md`
+- shadcn 4.x init bundles a Button by default during init — not just init-only as expected. style picked is `base-nova`, primitives are `@base-ui/react` not `@radix-ui/react-*`.
+- MCP Playwright wants Google Chrome at `/Applications/Google Chrome.app/...`. Chromium-headless from `npx playwright install chromium` is NOT auto-discovered. For Claude-driven screenshots, invoke the chromium binary directly via Bash.
+- pnpm 10's deny-list blocks the `supabase` CLI npm package's postinstall by default. Fix: add `"pnpm": { "onlyBuiltDependencies": ["supabase"] }` to `package.json`.
 
 ### Session 2026-04-28 (Claude Code #201_04.27.2026 — THS-1 ship)
 

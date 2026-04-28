@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 /* ==========================================================================
    AI Thesis — Investment OS · Design tokens
@@ -8,32 +12,32 @@
 
 @theme {
   /* Surface */
-  --color-bg: #0A0B0E;
-  --color-surface: #14161B;
-  --color-surface-2: #1A1D24;
-  --color-surface-hover: #1F232B;
+  --color-bg: #0a0b0e;
+  --color-surface: #14161b;
+  --color-surface-2: #1a1d24;
+  --color-surface-hover: #1f232b;
   --color-border: #232730;
-  --color-border-subtle: #1A1D24;
+  --color-border-subtle: #1a1d24;
 
   /* Text */
-  --color-text-1: #F0F1F3;
-  --color-text-2: #9298A3;
-  --color-text-3: #5F6571;
+  --color-text-1: #f0f1f3;
+  --color-text-2: #9298a3;
+  --color-text-3: #5f6571;
 
   /* Accent */
-  --color-accent: #4D5BFF;
+  --color-accent: #4d5bff;
   --color-accent-soft: rgba(77, 91, 255, 0.12);
-  --color-accent-hover: #6573FF;
+  --color-accent-hover: #6573ff;
 
   /* Status */
-  --color-success: #4FB87A;
+  --color-success: #4fb87a;
   --color-success-soft: rgba(79, 184, 122, 0.12);
-  --color-warning: #DDA84F;
+  --color-warning: #dda84f;
   --color-warning-soft: rgba(221, 168, 79, 0.12);
-  --color-danger: #E26B6B;
+  --color-danger: #e26b6b;
   --color-danger-soft: rgba(226, 107, 107, 0.12);
-  --color-info: #5B8FFF;
-  --color-info-soft: rgba(91, 143, 255, 0.10);
+  --color-info: #5b8fff;
+  --color-info-soft: rgba(91, 143, 255, 0.1);
 
   /* Fonts (variables come from next/font in app/layout.tsx) */
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
@@ -41,7 +45,8 @@
 }
 
 /* Base reset + body chrome */
-html, body {
+html,
+body {
   background: var(--color-bg);
   color: var(--color-text-1);
   font-family: var(--font-sans);
@@ -58,7 +63,7 @@ html, body {
 
 /* Body atmosphere — barely perceptible (DESIGN_SPEC §2) */
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -75,12 +80,20 @@ body > * {
 
 /* Live indicator pulse (DESIGN_SPEC §7.5) */
 @keyframes pulseLive {
-  0% { transform: scale(1); opacity: 0.4; }
-  100% { transform: scale(2.2); opacity: 0; }
+  0% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -101,4 +114,101 @@ body > * {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-surface-hover);
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* shadcn token bridge — DESIGN_SPEC mapping per HANDOFF.md.
+   Site is always dark; no .dark toggle. shadcn's --accent maps to
+   --surface-hover (NOT brand --accent) — see HANDOFF trap note. */
+:root {
+  /* Mapped from HANDOFF.md (16 tokens) */
+  --background: #0a0b0e;
+  --foreground: #f0f1f3;
+  --card: #14161b;
+  --card-foreground: #f0f1f3;
+  --popover: #1a1d24;
+  --popover-foreground: #f0f1f3;
+  --primary: #4d5bff;
+  --primary-foreground: #ffffff;
+  --muted: #1a1d24;
+  --muted-foreground: #9298a3;
+  --accent: #1f232b;
+  --accent-foreground: #f0f1f3;
+  --destructive: #e26b6b;
+  --border: #1a1d24;
+  --input: #1a1d24;
+  --ring: #4d5bff;
+
+  /* Phase 1 placeholders (refine per ticket when first used) */
+  --secondary: #1a1d24;
+  --secondary-foreground: #f0f1f3;
+  --chart-1: #4d5bff;
+  --chart-2: #4fb87a;
+  --chart-3: #dda84f;
+  --chart-4: #5b8fff;
+  --chart-5: #e26b6b;
+  --sidebar: #14161b;
+  --sidebar-foreground: #f0f1f3;
+  --sidebar-primary: #4d5bff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1f232b;
+  --sidebar-accent-foreground: #f0f1f3;
+  --sidebar-border: #1a1d24;
+  --sidebar-ring: #4d5bff;
+
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

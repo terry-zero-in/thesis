@@ -67,19 +67,21 @@ Per Terry's locked rule: handoffs document state, never assign tasks. The next C
 ```bash
 cd /Users/terryturner/Projects/thesis
 git fetch --all
-gh pr view 4                          # THS-4 PR state — open / merged / changes requested
 git status                            # working tree + current branch
-git log -3 --oneline --all            # confirm head locations on main + ths-4-shell
-supabase status                       # confirm local Supabase running. If not, supabase start
+git log -5 --oneline --all            # head locations on main + active branches
+gh pr list --state open               # open PRs (do NOT auto-action; ask Terry)
+supabase status                       # local Supabase. If not running: supabase start
 ```
 
-Then via Linear MCP confirm THS-4 state.
+Then via Linear MCP confirm current ticket state.
 
-### 2. Address PR #4 review state
+### 2. Open-PR review protocol — Codex is advisory, not blocking (LOCKED 2026-04-29)
 
-- **If PR #4 has new Codex findings:** address them on `ths-4-shell` before anything else.
-- **If PR #4 is approved/clean and Terry says merge:** `gh pr merge 4 --squash --delete-branch`, then `git checkout main && git pull`, mark Linear THS-4 → Done with merged hash, confirm Vercel auto-deploy of `main` at <https://thesis-nu.vercel.app>.
-- **If PR #4 is open with no Codex re-review yet:** check Codex's status — `gh api repos/terry-zero-in/thesis/pulls/4/reviews` — and wait OR ask Terry to merge if he's already accepted the fixes verbally.
+- **Codex (`chatgpt-codex-connector[bot]`) reviews are advisory, NOT a merge gate.** Treat as a third pair of eyes.
+- **On the initial Codex review of any PR:** address legitimate P1 findings in the same branch. Judgment on P2/P3 — fix if cheap, defer if not.
+- **After pushing fixes:** do NOT wait for Codex re-review. Push, request Terry's review, move on. If Codex flags something on the new commit, handle it in the NEXT PR — unless it's a security P1.
+- **Do NOT poll `gh api repos/.../pulls/N/reviews`** as part of the merge decision. Codex state is not a gate.
+- **Merge gate is Terry's approval ONLY.** Perplexity grades at checkpoints (after THS-4 ✓, 7, 11, 14). Codex never gates.
 
 ### 3. Functional ⌘K verification (PENDING from Session 209)
 
@@ -212,6 +214,15 @@ prettier             3.8.3  ✅ installed
 - **Linear MCP:** Claude operates Linear via MCP for everything. UI-only steps require explicit click-by-click instructions for Terry.
 - **Cloud paste discipline:** migrations + auth SQL run **locally only** via `supabase db reset` against the Docker stack. Cloud paste happens only at THS-14 deploy when the actual Thesis Supabase Pro project is created. (During THS-2, a Thesis migration was inadvertently pasted into Fontera Supabase scratchpad; surgical rollback dropped all 23 Thesis tables + the `handle_new_auth_user` function. Lesson: never paste THS-N migrations into Fontera.)
 
+### Codex protocol (LOCKED 2026-04-29 — advisory, not blocking)
+
+- Codex (`chatgpt-codex-connector[bot]`) reviews are **advisory**, NOT a merge gate. Third pair of eyes — useful, not authoritative.
+- **Initial Codex review on a PR:** address legitimate P1 findings in the same branch. Judgment on P2/P3 — fix if cheap, defer if not.
+- **After pushing fixes:** do NOT wait for Codex re-review. Push, request Terry's review, move on. If Codex flags something on the new commit, handle it in the NEXT PR — unless it's a security P1.
+- **Do NOT poll `gh api repos/.../pulls/N/reviews`** to gate merge decisions. Codex state is not a gate.
+- **Merge gate is Terry's approval ONLY.** Perplexity grades at checkpoints (after THS-4 ✓, 7, 11, 14). Codex never gates.
+- Full operational text mirrored in SESSION-STARTUP SANITY CHECKS section 2 above.
+
 ### Build order to Perplexity Checkpoint #1
 
 THS-1 ✅ → THS-2 ✅ → THS-3 ✅ (in review) → THS-4. **Stop after THS-4 merges.** Perplexity grades against the blueprint, then unblocks THS-5+.
@@ -319,4 +330,4 @@ shadcn 4.5.0 init landed in THS-3 (commit `0fd5152`, now part of `49b1221`). Map
 
 ## Continuation note for Terry to paste to next Claude
 
-> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full context. THS-1 + THS-2 + THS-3 are merged on `main` (`fe4cdf3`). THS-4 is SHIPPED on `ths-4-shell` at `283a39e` — PR #4 (https://github.com/terry-zero-in/thesis/pull/4) is open against main with Linear THS-4 → In Review. Run the SESSION-STARTUP SANITY CHECKS (`gh pr view 4`, `git fetch`, `supabase status`), confirm Codex re-review state, then ASK ME what to work on — do not auto-assign work. THS-4 is Perplexity Checkpoint #1; do not start THS-5 until Perplexity grades and I unblock.**
+> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full context. THS-1 + THS-2 + THS-3 + THS-4 are merged on `main` (THS-4 squash at `2f5aa9e`). Perplexity Checkpoint #1 is CLEARED 2026-04-29 — THS-5 (Watchlist CRUD) is unblocked, Linear status `In Progress`. PR #5 (`fix(ui): rounded-md radius on command palette`) may still be open against main; Codex cleared it ("Breezy!"), and per locked protocol Codex is advisory only — Terry's approval is the only merge gate. Run the SESSION-STARTUP SANITY CHECKS (`git fetch`, `git status`, `gh pr list --state open`, `supabase status`), then ASK ME what to work on — do not auto-assign.**

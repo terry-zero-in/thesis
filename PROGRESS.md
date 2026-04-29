@@ -10,8 +10,8 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 |---|---|---|---|---|
 | THS-1 | Scaffold Next.js repo + design tokens | ✅ Done 2026-04-28 | [#1](https://github.com/terry-zero-in/thesis/pull/1) | Squash-merged at `94e622f`. Live at https://thesis-nu.vercel.app. shadcn init deferred to THS-3. |
 | THS-2 | Supabase schema + RLS | ✅ Done 2026-04-28 | [#2](https://github.com/terry-zero-in/thesis/pull/2) | Squash-merged at `9142315`. All 23 Section D tables, RLS on every table, 11/11 RLS isolation tests passed, types/supabase.ts generated. |
-| THS-3 | Magic-link auth + protected middleware + sign-in | ✅ Shipped 2026-04-28 (in review) | [#3](https://github.com/terry-zero-in/thesis/pull/3) | Branch `ths-3-auth` at `49b1221`. proxy.ts + /login + /auth/callback + / + dashboard defense + sign-out all landed. supabase/config.toml redirect-allowlist fix included. Awaiting Terry's merge. |
-| THS-4 | Sidebar + topnav + ⌘K palette | ⬜ Todo | — | **Perplexity Checkpoint #1 stops here.** Don't proceed to THS-5 until Perplexity unblocks. |
+| THS-3 | Magic-link auth + protected middleware + sign-in | ✅ Done 2026-04-28 | [#3](https://github.com/terry-zero-in/thesis/pull/3) | Squash-merged at `fe4cdf3`. Two Codex review cycles: P2 host-protocol fix + P1 disable-auto-signup, both landed before merge. Live at https://thesis-nu.vercel.app. |
+| THS-4 | Sidebar + topnav + ⌘K palette | ✅ Shipped 2026-04-28 (in review) | [#4](https://github.com/terry-zero-in/thesis/pull/4) | Branch `ths-4-shell` at `283a39e`. App shell `(app)/layout.tsx` + 10 sidebar routes + ⌘K palette + EmptyPanel pattern. shadcn `command`+`dialog` added. DESIGN_SPEC §4.3 refreshed to 10-route nav. Codex P1 fix landed (CommandDialog missing `<Command>` root). **Perplexity Checkpoint #1 stops here.** |
 | THS-5 | Watchlist CRUD | ⬜ Todo | — | |
 | THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | — | |
 | THS-7 | Single-agent research (Company Research) | ⬜ Todo | — | **Perplexity Checkpoint #2: first end-to-end memo.** |
@@ -44,6 +44,52 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 ---
 
 ## Sessions
+
+### Session 2026-04-28 (Claude Code #209_04.28.2026 — THS-3 merge + THS-4 ship)
+
+**Focus:** Address Codex review feedback on THS-3, merge it, then build + ship THS-4 (app shell — Perplexity Checkpoint #1).
+
+**Done — THS-3 (review-cycle through merge):**
+- Codex P2 (host-protocol fallback at `app/login/actions.ts:31`) addressed at `aeb69ca`. Replaced unconditional `https://${host}` with `x-forwarded-proto`-aware origin reconstruction. Same trap as gotcha #19 but at the call-site layer.
+- Codex P1 (auto-signup at `app/login/actions.ts:37`) addressed at `9aa1550`. Added `shouldCreateUser: false` to `signInWithOtp` options. Verified at the GoTrue REST layer — `POST /auth/v1/otp` with `create_user:false` returns `422 otp_disabled` and creates zero `auth.users` rows. Phase-1 single-user lock honored.
+- PR #3 squash-merged at `fe4cdf3` on `main`. Local `ths-3-auth` cleaned up. Vercel auto-deployed `main`. Linear THS-3 → Done with merge-commit attachment.
+
+**Done — THS-4 (app shell — full ticket end-to-end):**
+- `app/(app)/` route group with `layout.tsx` (server component, `getUser()` defense + `CommandPaletteProvider` + grid).
+- Move `app/dashboard` and `app/tokens` into `(app)/` (auth-gated, framed by shell). `/login` and `/auth/callback` stay outside.
+- 9 new stub pages under `(app)/`: watchlist, research-queue, triggers, opportunities, memos, decisions, portfolio, workflows, settings. Dashboard rewritten — sign-out treatment removed (now in palette), identity moved to topbar avatar.
+- `components/shell/` — `nav-config.ts` (single source for 10 nav items + Lucide icons), `topbar.tsx` (server, 48px, brand + ⌘K trigger + live-market pulse + counts + initials), `sidebar.tsx` (client, `usePathname` active state, 2×16 accent bar at `left:-8`), `command-palette.tsx` (client, global Cmd/Ctrl+K listener, navigates 10 routes + Sign Out via `signOut` server action through `useTransition`), `command-palette-trigger.tsx`, `empty-panel.tsx` (DESIGN_SPEC §9 panel pattern).
+- shadcn add: `command`, `dialog`, `input-group`, `textarea` (base-nova style, `@base-ui/react` primitives).
+- Empty-state copy specific per route, sentence case, no ticket refs in user-facing text. 7 of 10 strings authored locally, 3 verbatim from Terry.
+- DESIGN_SPEC §4.3 refreshed to 10-route nav (was 8 — drift between SoT and ticket scope reconciled in same commit).
+- HANDOFF gotchas #23 (`/login` 500 on Vercel preview pre-THS-14 by design) + #24 (verification rigor — render ≠ functional).
+- PR #4 opened at `a8b9378`. Codex P1 returned: shadcn 4.x `CommandDialog` dropped the `<Command>` cmdk root that older versions had — palette rendered green on the curl matrix but was structurally non-functional (no input filtering, no arrow nav, no Enter selection). Fixed at the primitive layer at `283a39e` (`<Command>{children}</Command>` inside `DialogContent`). Codex re-review pending at session close.
+
+**Verification:**
+- `pnpm tsc --noEmit` clean (post-build, validator regenerated)
+- `pnpm build` clean — 14 routes (10 sidebar + /, /_not-found, /auth/callback, /login, /tokens), Turbopack, no edge-runtime errors
+- Unauth redirect matrix passes for all 11 protected routes (curl)
+- API-layer verification on THS-3 P1: GoTrue `422 otp_disabled` + zero new rows on unknown email
+- Functional ⌘K verification PENDING — Terry's hands; 6 keystroke checks named in HANDOFF Task 3
+
+**Decisions made:**
+- Linear ticket text wins on ambiguity over DESIGN_SPEC §4.3 drift; update SoT in same PR that exposes the drift (THS-4 → 10 routes, Linear was right, DESIGN_SPEC was 8-stale).
+- Single trust boundary > convenience: `/tokens` moved into `(app)/` even though it's a dev-utility page.
+- Empty-state copy is descriptive, not narrative. Trim trailing causal clauses ("…as research runs and decisions are recorded" → just "…appear here.").
+- Render-only verification ≠ functional verification. The shadcn `CommandDialog` shipped green on `gh pr view` matrix but never worked — caught only by Codex's structural review of the cmdk API. New gotcha #24 locks the rule.
+- `/login` 500 on Vercel preview pre-THS-14 is by design — `createServerClient` requires Supabase env vars that don't exist on preview. Defer-and-document policy for any env-dependent feature broken on preview before THS-14. Gotcha #23.
+- Patch shadcn primitive at the source for the cmdk root fix, not at the consumer level — every future palette/dialog inherits the fix; consumer-level wrap leaves a latent bug.
+- Sign-out moved out of dashboard body and into the ⌘K palette via `signOut` server action wrapped in `useTransition`. Identity moves to topbar avatar (initials from email local-part, first 2 chars uppercased).
+
+**Carrying forward:**
+- PR #4 awaiting (a) Codex re-review verdict on `283a39e` (b) Terry's functional ⌘K browser test (c) merge.
+- After merge: Perplexity Checkpoint #1 — Terry runs THS-4 build through Perplexity for spec compliance grading. THS-5 BLOCKED until then.
+- Vercel preview deploy still erroring on commit-author-email mismatch — DEFERRED, doesn't block `main` auto-deploy.
+
+**Key gotchas surfaced this session:**
+- shadcn 4.x `CommandDialog` is missing the `<Command>` cmdk root that older versions had. Patch the primitive at source, not at consumer (gotcha conceptually documented in commit; not a HANDOFF gotcha because it's now fixed).
+- HANDOFF gotcha #23: `/login` 500 on Vercel preview pre-THS-14 by design.
+- HANDOFF gotcha #24: render-only verification is not functional verification. Don't mark green from a curl matrix when the surface has interactive elements.
 
 ### Session 2026-04-28 (Claude Code #206_04.28.2026 — THS-3 ship)
 

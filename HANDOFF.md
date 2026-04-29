@@ -1,8 +1,24 @@
 # Thesis — Session Handoff
 
-**Session date:** 2026-04-28 (continued)
-**Closing Claude:** Code #209_04.28.2026 (14-042826), row `42827e19-24d9-46ee-b820-2a90be82a7b3`
-**Status at close:** THS-3 ✅ MERGED at `fe4cdf3` on `main`. THS-4 ✅ SHIPPED — PR #4 open at `283a39e` on `ths-4-shell`. Linear THS-4 → In Review. **Perplexity Checkpoint #1 stops here — do not start THS-5 until Perplexity grades against the blueprint.**
+**Session date:** 2026-04-29 (continued from 2026-04-28)
+**Closing Claude:** Code #212_04.28.2026 (17-042826), row `fc61cfd3-cb72-4c72-bbfe-c8da22c570a2`
+**Status at close:** THS-1 + THS-2 + THS-3 + THS-4 all merged on `main` (THS-4 squash at `2f5aa9e`). Docs commit `cc342ea` adds locked Codex protocol. **Perplexity Checkpoint #1 ✅ CLEARED 2026-04-29.** THS-5 (Watchlist CRUD) Linear → In Progress, no branch yet. PR #5 (`fix(ui): rounded-md radius on command palette` at `b10b959` on `fix-cmd-palette-radius`) open against main; Codex cleared ("Breezy!"); awaiting Terry's merge call. Repo flipped to public for Perplexity access.
+
+---
+
+## NEXT 3-5 TASKS (start here)
+
+1. **Run sanity checks** — `git fetch && git status && gh pr list --state open && supabase status`. Confirm `main` HEAD is `cc342ea` (or newer if PR #5 has merged in the meantime). Then via Linear MCP confirm THS-5 still `In Progress`.
+
+2. **Two open decisions before any code action — ASK Terry:**
+   - **PR #5 (`fix(ui): rounded-md radius` at `b10b959` on `fix-cmd-palette-radius`):** Codex cleared ("Breezy!"). Per locked Codex protocol, Terry's approval is the only merge gate. Ask: merge first, or leave open and cut THS-5 in parallel?
+   - **Polygon API key:** THS-5's Add-ticker modal needs `POLYGON_API_KEY` in `.env.local` for symbol validation. Per HANDOFF gotcha #14 + #13, do NOT pre-populate; ask Terry to provide the actual value.
+
+3. **After Terry's call: cut `ths-5-watchlist`** from the chosen base point (post-PR-5-merge `main` is cleanest per Terry's prior preference). Linear THS-5 already `In Progress` — no Linear state change needed. Push branch only after first commit.
+
+4. **Read THS-5 scope:** Linear THS-5 ticket text (via Linear MCP) + `docs/design/DESIGN_SPEC.md §5.5` (Watchlist trigger proximity — informs design even though §5.5 is a dashboard component, not the standalone /watchlist page) + blueprint Section G Screen 2 (in `/Users/terryturner/Downloads/Investment Portal Blueprint.md` — note macOS Full Disk Access not granted per gotcha #2; ask Terry to paste section text).
+
+5. **Begin THS-5 implementation:** install `@tanstack/react-table` (per HANDOFF stack list deferred to THS-5/6) and scaffold `WatchlistTable` component in `app/(app)/watchlist/page.tsx`. Server component fetches `watchlist_tickers` via Supabase; client `WatchlistTable` handles interactions. Add-ticker modal needs Polygon symbol validation. Acceptance per Linear: can add NVDA / MSFT / NET, remove NVDA, re-add NVDA. Persists on refresh.
 
 ---
 
@@ -21,22 +37,20 @@
 ## Current repo state
 
 ```
-main branch:    fe4cdf3 — THS-3 squash-merged (magic-link auth + proxy.ts + /login + /auth/callback + sign-out)
-                  Includes 2 review-cycle fixes:
-                  +─ aeb69ca — fix(THS-3): use x-forwarded-proto for origin reconstruction (Codex P2)
-                  +─ 9aa1550 — fix(THS-3): disable auto-signup in magic-link sign-in (Codex P1)
+main:                        cc342ea — docs: codex as advisory, not blocking [2026-04-29]
+                                 ├─ 2f5aa9e — THS-4: App shell — sidebar + topbar + ⌘K palette (#4) [squash 2026-04-28]
+                                 ├─ fe4cdf3 — THS-3: Magic-link auth + protected middleware + sign-in (#3)
+                                 ├─ 9142315 — THS-2: Supabase schema + RLS per blueprint Section D (#2)
+                                 └─ 94e622f — THS-1: Scaffold Next.js repo + design tokens (#1)
 
-ths-4-shell:    283a39e — fix(THS-4): wrap CommandDialog children in Command root (Codex P1)
-                  Stack on top of:
-                  +─ a8b9378 — feat(THS-4): app shell — sidebar + topbar + ⌘K palette
-                  [PUSHED · PR #4 OPEN · LINEAR → IN REVIEW]
-                  +─ app/(app)/layout.tsx — server, getUser defense + topbar + sidebar grid
-                  +─ app/(app)/{dashboard,watchlist,research-queue,triggers,opportunities,memos,decisions,portfolio,workflows,settings,tokens}/page.tsx
-                  +─ components/shell/{topbar,sidebar,command-palette,command-palette-trigger,empty-panel,nav-config}
-                  +─ components/ui/{command,dialog,input-group,textarea}.tsx (shadcn add)
-                  +─ DESIGN_SPEC §4.3 refreshed to 10-route nav (was 8 — drift fix in same commit)
-                  +─ HANDOFF gotchas 23 (/login 500 pre-THS-14) + 24 (verification rigor)
+fix-cmd-palette-radius:      b10b959 — fix(ui): rounded-md radius on command palette per spec §7.9/§9.3
+                              [PUSHED · PR #5 OPEN · CODEX CLEARED ("Breezy!") · AWAITING TERRY MERGE]
+
+ths-5-watchlist:             NOT YET CUT. Linear THS-5 In Progress.
+                              Cut from post-PR-5-merge main per locked workflow.
 ```
+
+**Repo visibility:** `public` (flipped 2026-04-29 for Perplexity Checkpoint #1 access). Reversible via `gh repo edit terry-zero-in/thesis --visibility private --accept-visibility-change-consequences`.
 
 **Stack pinned (current state):**
 ```
@@ -83,21 +97,21 @@ Then via Linear MCP confirm current ticket state.
 - **Do NOT poll `gh api repos/.../pulls/N/reviews`** as part of the merge decision. Codex state is not a gate.
 - **Merge gate is Terry's approval ONLY.** Perplexity grades at checkpoints (after THS-4 ✓, 7, 11, 14). Codex never gates.
 
-### 3. Functional ⌘K verification (PENDING from Session 209)
+### 3. Functional verification rigor on interactive surfaces
 
-Terry needs to do (or has done) the 6 keystroke checks against `http://localhost:3000` after auth:
-1. Cmd+K opens palette
-2. Type "memos" → list filters to Memos route
-3. ↓↓ navigates highlight down
-4. Enter routes to /memos
-5. Cmd+K reopens, Esc closes
-6. Cmd+K reopens, type "sign", Enter on Sign Out → /login
+Render ≠ functional. For every interactive surface (palette, dialog, form, dropdown, etc.) shipped in a PR, keystroke/click test before any "verification clean" claim. Per HANDOFF gotchas #19 + #24 — written after the THS-4 ⌘K cmdk-root P1 + the rounded-md selection-highlight regression, both of which a render-only check would have signed off on.
 
-If any of these failed, that's the first work item — debug at `components/shell/command-palette.tsx` or `components/ui/command.tsx`. Per HANDOFF gotcha #24, never report verification clean from render-only checks.
+Auth-walled features (anything inside `app/(app)/`) require Terry's hands for keystroke testing — `@supabase/ssr` PKCE cookie cannot be injected into chrome-headless-shell from CLI (gotcha #22).
 
-### 4. Once THS-4 merges — Perplexity Checkpoint #1
+### 4. Perplexity checkpoint protocol
 
-**STOP. Do NOT start THS-5.** Terry runs the THS-4 build through Perplexity for spec compliance grading against `docs/design/DESIGN_SPEC.md` + blueprint Section G. Wait for Perplexity's grade + Terry's go-ahead before THS-5 (Watchlist CRUD).
+Four checkpoints across Phase 1:
+- **Checkpoint #1** — after THS-4: ✅ CLEARED 2026-04-29 (Perplexity grade authorized THS-5 start)
+- **Checkpoint #2** — after THS-7 (first end-to-end memo, NVDA company research)
+- **Checkpoint #3** — after THS-11 (approval flow + Resend email)
+- **Checkpoint #4** — pre-prod (THS-14)
+
+At each checkpoint: full PR build + DESIGN_SPEC + relevant blueprint section run through Perplexity for compliance grading. Terry triggers each checkpoint and unblocks the next phase.
 
 ### 5. Ask Terry what's next
 
@@ -120,6 +134,17 @@ Per Terry's locked rule (`feedback_no_task_assignment.md`): do not assume the ne
 ---
 
 ## Locked decisions (do not relitigate without Terry's explicit override)
+
+### THS-4 (locked + shipped 2026-04-28, merged 2026-04-28 at `2f5aa9e`)
+
+- **App shell route group** at `app/(app)/layout.tsx` — server component with `getUser()` defense + `CommandPaletteProvider` + 220×1fr CSS grid + 48px sticky topbar.
+- **10 sidebar routes** (DESIGN_SPEC §4.3 refreshed to 10 in same commit; was 8 — drift fix). WORK: Dashboard, Watchlist, Research Queue, Triggers, Opportunities, Memos, Decisions, Portfolio. SYSTEM: Workflows, Settings.
+- **⌘K palette** via shadcn 4.x `command` + `dialog` (base-ui primitives). Global `Cmd/Ctrl+K` listener; navigates 10 routes + Sign Out via `signOut` server action through `useTransition`.
+- **Sign-out moved** from dashboard body into the ⌘K palette. Identity surfaces as initials avatar in topbar (first 2 chars of email local-part, uppercased).
+- **shadcn primitive-layer fixes** (P1s addressed at primitive, not consumer):
+  - `CommandDialog` was missing `<Command>` cmdk root — palette rendered green on curl matrix but was structurally non-functional. Fixed at `components/ui/command.tsx:63` (added `<Command>{children}</Command>` inside `DialogContent`).
+  - `CommandItem` selection styling mapped to `bg-muted` which collided with parent `bg-popover` (both → shadcn `--surface-2`). Selection state was firing but visually identical to row default. Fixed via `data-[selected=true]:bg-surface-hover` (Tailwind utility, NOT arbitrary `var()` lookup) at `components/ui/command.tsx:159`.
+- **Functional verification:** Terry ran 6/6 keystroke pass on `e1ff226` (later squash-merged into `2f5aa9e`). The two primitive fixes were caught only by functional test, not render check — gotcha #19/#24 written from this experience.
 
 ### THS-3 (locked + shipped 2026-04-28)
 
@@ -223,16 +248,23 @@ prettier             3.8.3  ✅ installed
 - **Merge gate is Terry's approval ONLY.** Perplexity grades at checkpoints (after THS-4 ✓, 7, 11, 14). Codex never gates.
 - Full operational text mirrored in SESSION-STARTUP SANITY CHECKS section 2 above.
 
-### Build order to Perplexity Checkpoint #1
+### Build order through Phase 1 checkpoints
 
-THS-1 ✅ → THS-2 ✅ → THS-3 ✅ (in review) → THS-4. **Stop after THS-4 merges.** Perplexity grades against the blueprint, then unblocks THS-5+.
+Perplexity Checkpoint #1 (after THS-4) ✅ CLEARED 2026-04-29.
 
-- **THS-1:** ✅ Done — scaffold + tokens + Geist + ESLint/Prettier + `/tokens` page + `/dashboard` placeholder. Live at https://thesis-nu.vercel.app.
-- **THS-2:** ✅ Done — full Section D schema + RLS at `9142315`.
-- **THS-3:** ✅ SHIPPED — magic-link auth + proxy.ts + /login + /auth/callback + sign-out. PR #3 in review at `49b1221`.
-- **THS-4:** ⬜ Sidebar + topnav + ⌘K command palette. **Perplexity Checkpoint #1.**
+- THS-1 ✅ Done · THS-2 ✅ Done · THS-3 ✅ Done · **THS-4 ✅ Done** at `2f5aa9e` (Perplexity Checkpoint #1 ✓)
+- **THS-5 ⬜ In Progress** — Watchlist CRUD
+- THS-6 ⬜ Ticker detail (chart + fundamentals)
+- THS-7 ⬜ Single-agent research (Company Research) → **Perplexity Checkpoint #2**
+- THS-8 ⬜ Triggers data model
+- THS-9 ⬜ Trigger evaluator (code + tests, no cron)
+- THS-10 ⬜ Memo generation
+- THS-11 ⬜ Approval flow + Resend → **Perplexity Checkpoint #3**
+- THS-12 ⬜ Decision log
+- THS-13 ⬜ Alerts + realtime
+- THS-14 ⬜ Polish + prod deploy → **Perplexity Checkpoint #4**
 
-Four Perplexity checkpoints across the whole Phase 1 build: after THS-4, after step 7 (first memo end-to-end), after step 11 (approval flow), and pre-prod (step 14).
+Full ticket detail in PROGRESS.md.
 
 ### shadcn token mapping (executed in THS-3)
 

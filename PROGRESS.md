@@ -11,8 +11,8 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 | THS-1 | Scaffold Next.js repo + design tokens | ✅ Done 2026-04-28 | [#1](https://github.com/terry-zero-in/thesis/pull/1) | Squash-merged at `94e622f`. Live at https://thesis-nu.vercel.app. shadcn init deferred to THS-3. |
 | THS-2 | Supabase schema + RLS | ✅ Done 2026-04-28 | [#2](https://github.com/terry-zero-in/thesis/pull/2) | Squash-merged at `9142315`. All 23 Section D tables, RLS on every table, 11/11 RLS isolation tests passed, types/supabase.ts generated. |
 | THS-3 | Magic-link auth + protected middleware + sign-in | ✅ Done 2026-04-28 | [#3](https://github.com/terry-zero-in/thesis/pull/3) | Squash-merged at `fe4cdf3`. Two Codex review cycles: P2 host-protocol fix + P1 disable-auto-signup, both landed before merge. Live at https://thesis-nu.vercel.app. |
-| THS-4 | Sidebar + topnav + ⌘K palette | ✅ Shipped 2026-04-28 (in review) | [#4](https://github.com/terry-zero-in/thesis/pull/4) | Branch `ths-4-shell` at `283a39e`. App shell `(app)/layout.tsx` + 10 sidebar routes + ⌘K palette + EmptyPanel pattern. shadcn `command`+`dialog` added. DESIGN_SPEC §4.3 refreshed to 10-route nav. Codex P1 fix landed (CommandDialog missing `<Command>` root). **Perplexity Checkpoint #1 stops here.** |
-| THS-5 | Watchlist CRUD | ⬜ Todo | — | |
+| THS-4 | Sidebar + topnav + ⌘K palette | ✅ Done 2026-04-28 | [#4](https://github.com/terry-zero-in/thesis/pull/4) | Squash-merged at `2f5aa9e`. App shell `(app)/layout.tsx` + 10 sidebar routes + ⌘K palette + EmptyPanel. Two primitive-layer P1 fixes: `<Command>` cmdk root (`components/ui/command.tsx:63`) + selection-highlight styling (`bg-surface-hover` Tailwind utility, line 159). 6/6 functional ⌘K test passed before merge. **Perplexity Checkpoint #1 ✅ CLEARED 2026-04-29.** |
+| THS-5 | Watchlist CRUD | ⬜ In Progress 2026-04-29 | — | Linear In Progress. No branch yet. Awaiting Terry's call on (a) merge PR #5 first vs (b) cut in parallel + Polygon API key. |
 | THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | — | |
 | THS-7 | Single-agent research (Company Research) | ⬜ Todo | — | **Perplexity Checkpoint #2: first end-to-end memo.** |
 | THS-8 | Trigger definitions data model only | ⬜ Todo | — | |
@@ -45,7 +45,48 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 
 ## Sessions
 
-### Session 2026-04-28 (Claude Code #209_04.28.2026 — THS-3 merge + THS-4 ship)
+### Session 2026-04-29 (Claude Code #212_04.28.2026 — THS-4 merge + Perplexity Checkpoint #1 + Codex protocol locked + PR #5)
+
+**Focus:** Carry THS-4 from PR-#4-open through Codex review, functional ⌘K test, merge, Perplexity Checkpoint #1, and resolve the spec-flagged radius issue via PR #5. Lock Codex-as-advisory protocol.
+
+**Done:**
+- **THS-4 merged.** Initial Codex review on `a8b9378` flagged P1 (CommandDialog missing `<Command>` cmdk root) — fixed at `283a39e`. Functional 6-keystroke ⌘K test on `e1ff226` exposed step 3 fail (no visible selection highlight). Root cause traced through cmdk emission (correct), then Tailwind class compilation (the bug). First fix attempt `bg-[var(--surface-hover)]` was null because `--surface-hover` does not exist as a CSS variable anywhere in the cascade (only `--color-surface-hover` in `@theme` and `--accent` in `:root` semantic alias). Second attempt `bg-surface-hover` (Tailwind utility resolving via `@theme`) worked. PR #4 squash-merged at `2f5aa9e`. Linear THS-4 → Done. ths-4-shell deleted on origin.
+- **Repo flipped to public** for Perplexity grading access (`gh repo edit terry-zero-in/thesis --visibility public`). Reversible.
+- **Perplexity Checkpoint #1 ✅ CLEARED.** Two findings actioned: (1) `rounded-xl!` (~11.2px) violates DESIGN_SPEC §7.9 / §9.3 — fixed via `rounded-md` (6.4px) at `components/ui/command.tsx:28+58`. (2) `CommandItem` value-prefix pattern was claimed to break "dashboard" search — empirical test proved cmdk's substring-fuzzy filter handles it; Perplexity retracted. Section-pollution side issue (typing "work" matches all WORK items) attempted via cmdk `keywords` prop; functional test (cases 2 + 3) failed; reverted; deferred to THS-14 polish backlog with Linear comment containing test results, hypothesis, alternative path.
+- **PR #5 opened** (`b10b959`) with Fix 1 (radius) only. Codex cleared ("Breezy!"). Open against main awaiting Terry's merge call.
+- **Codex protocol LOCKED 2026-04-29 — advisory, not blocking.** New rule: Codex reviews are a third pair of eyes; never gate merge. Initial-review P1s addressed in same branch; post-fix push does NOT wait for re-review; only Terry's approval gates merge. Applied via docs commit `cc342ea` to `main` with HANDOFF.md updates (SESSION-STARTUP SANITY CHECKS section 2 + new Locked decisions subsection + continuation note).
+
+**Process (durable rules established):**
+- **Branch creation = ticket start.** Perplexity-checkpoint-gated tickets stay blocked until checkpoint passes AND Terry says go — even if a separate instruction reads as "start now." A mid-session course-correction wrongly flagged `ths-5-watchlist` as unauthorized; Terry reversed after confirming Perplexity had authorized. Lesson logged: `ths-5-watchlist` was deleted, recreated as `fix-cmd-palette-radius` for the radius fix; THS-5 stays uncut until post-PR-5-merge main per the workflow lock.
+- **Token-first principle:** never invent radii/fonts/tokens. Arbitrary `[Npx]` only when spec demands precision the `@theme` scale can't express AND that gap is explicitly confirmed.
+- **Literal vs intent rule for wrapped components:** if a component is clipped/wrapped by a parent in every consumer (e.g., `Command` inside `DialogContent` with `overflow-hidden`), an instruction to fix component X implies "fix parent too" unless explicitly literal — surface the wrapper, default to intent.
+- **VERIFY BEFORE ASSUMING precision claims:** open the `@theme` block, read the actual value before asserting "X = Y exactly." Caught the `rounded-md` = 6.4px (not 6px) override via `@theme inline { --radius-md: calc(var(--radius) * 0.8) }` with `--radius: 0.5rem`.
+- **Two-strike rule on external authority claims:** when a source has been wrong once on a specific subsystem within a session, a second proposal from the same source on the same subsystem requires verification before committing — not just empirical test after applying.
+- **Handoff documents are point-in-time snapshots.** Authorization state moves between sessions. Before flagging a branch or ticket-state as "unauthorized" based on handoff text, ask Terry to confirm current state.
+
+**Verification:**
+- All Codex findings on PR #4 commits resolved (P1 cmdk root, P2 host-protocol, P1 auto-signup; selection-highlight not a Codex finding but a Terry functional-test catch).
+- 6/6 keystroke ⌘K test passed on `e1ff226` pre-merge (proving palette functional at primitive layer).
+- `pnpm tsc --noEmit` clean throughout.
+- Perplexity grading on Checkpoint #1 cleared after the two findings either fixed or properly deferred.
+- Codex auto-fired on PR #5 within ~2min of `@codex review` nudge — "Didn't find any major issues. Breezy!" No P-findings on `b10b959`.
+
+**Carrying forward — THS-5:**
+- Linear THS-5 = `In Progress`. No branch yet. PR #5 open in parallel.
+- Two open decisions before code action: (a) PR #5 merge timing, (b) Polygon API key for `.env.local`.
+- Acceptance per Linear THS-5 ticket: `WatchlistTable` (TanStack Table) + Add-ticker modal with Polygon symbol validation + `watchlist_tickers` Supabase CRUD. Done when: NVDA/MSFT/NET add, NVDA remove, NVDA re-add, persists on refresh.
+
+**Decisions made:**
+- Codex = advisory only. Locked. Documented in HANDOFF.
+- THS-14 backlog: investigate cmdk `command-score` weights for section-scoped search (not blocking spec compliance, deferred per Perplexity's "cosmetic" framing). Linear comment on THS-14 has full test-result table + hypothesis + alternative path (custom `filter` prop on `<Command>` root).
+- HANDOFF.md `SESSION-STARTUP SANITY CHECKS` section generalized — no longer references `gh pr view 4`. Polls `gh pr list --state open` instead.
+
+**Key gotchas surfaced this session:**
+- Tailwind 4 `@theme inline` calc overrides default token resolution. `rounded-md` is NOT `0.375rem` (Tailwind v4 default); it's `calc(0.5rem * 0.8)` = 6.4px in this codebase. Verify the `@theme` block before claiming a precision value.
+- `bg-[var(--TOKEN)]` only works if `--TOKEN` is declared at runtime in `:root` or an ancestor. Tailwind's `@theme` block declares `--color-TOKEN` (note prefix), not `--TOKEN`. Use the Tailwind utility name (e.g., `bg-surface-hover`) which resolves via `@theme`, OR use the shadcn semantic alias (e.g., `bg-accent`) which resolves via `:root`.
+- shadcn 4.x `base-nova` style ships `rounded-xl!` on `Command` and `DialogContent`. Off-spec for designs with strict 6px panel radius. Sweep similar shadcn-generated primitives for radius compliance when added.
+
+
 
 **Focus:** Address Codex review feedback on THS-3, merge it, then build + ship THS-4 (app shell — Perplexity Checkpoint #1).
 

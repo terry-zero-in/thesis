@@ -12,7 +12,7 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 | THS-2 | Supabase schema + RLS | ✅ Done 2026-04-28 | [#2](https://github.com/terry-zero-in/thesis/pull/2) | Squash-merged at `9142315`. All 23 Section D tables, RLS on every table, 11/11 RLS isolation tests passed, types/supabase.ts generated. |
 | THS-3 | Magic-link auth + protected middleware + sign-in | ✅ Done 2026-04-28 | [#3](https://github.com/terry-zero-in/thesis/pull/3) | Squash-merged at `fe4cdf3`. Two Codex review cycles: P2 host-protocol fix + P1 disable-auto-signup, both landed before merge. Live at https://thesis-nu.vercel.app. |
 | THS-4 | Sidebar + topnav + ⌘K palette | ✅ Done 2026-04-28 | [#4](https://github.com/terry-zero-in/thesis/pull/4) | Squash-merged at `2f5aa9e`. App shell `(app)/layout.tsx` + 10 sidebar routes + ⌘K palette + EmptyPanel. Two primitive-layer P1 fixes: `<Command>` cmdk root (`components/ui/command.tsx:63`) + selection-highlight styling (`bg-surface-hover` Tailwind utility, line 159). 6/6 functional ⌘K test passed before merge. **Perplexity Checkpoint #1 ✅ CLEARED 2026-04-29.** |
-| THS-5 | Watchlist CRUD | ⬜ In Progress 2026-04-29 | — | Linear In Progress. No branch yet. Awaiting Terry's call on (a) merge PR #5 first vs (b) cut in parallel + Polygon API key. |
+| THS-5 | Watchlist CRUD | 🟡 In Review 2026-04-29 | [#6](https://github.com/terry-zero-in/thesis/pull/6) | Stub-first build at `27081b5` on `ths-5-watchlist`. Step 11 (live Massive swap) HELD on `.env.local:23` rotation gate. |
 | THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | — | |
 | THS-7 | Single-agent research (Company Research) | ⬜ Todo | — | **Perplexity Checkpoint #2: first end-to-end memo.** |
 | THS-8 | Trigger definitions data model only | ⬜ Todo | — | |
@@ -44,6 +44,85 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 ---
 
 ## Sessions
+
+### Session 2026-04-29 (Claude Code #220_04.29.2026 — PR #5 merge + THS-5 stub-first build PR #6 + Massive rebrand + 2 new durable rules)
+
+**Focus:** Merge PR #5 (radius fix), execute THS-5 stub-first build end-to-end through step 10, ship to PR #6, hold step 11 (live Massive swap) until key rotation lands on disk.
+
+**Done — PR #5 merge:**
+- `gh pr merge 5 --squash --delete-branch` clean. Fast-forward to `a1c4db0` on main. Verified `rounded-md` carried through to `components/ui/command.tsx:28+58`.
+
+**Done — Provider rebrand absorbed:**
+- Polygon.io → Massive.com on Oct 30, 2025 ([source](https://massive.com/blog/polygon-is-now-massive)). Web-search verified live. APIs/accounts/integrations backward-compatible.
+- Locked: `MASSIVE_API_KEY` env var (replaces empty `POLYGON_API_KEY` placeholder), `api.massive.com` endpoint, `GET /v3/reference/tickers/{ticker}` validation path (NOT `?search=`).
+- Linear THS-5 description updated: "Polygon" → "Massive (formerly Polygon)" + comment with rebrand context. `tickers.exchange NOT NULL` schema constraint surfaced — stub returns `XNAS` placeholder for stub mode.
+
+**Done — Pre-impl note cycle (v1 → v3.1) — overcooked:**
+- 7 questions surfaced; 6 locked over multiple turns by Terry; 2 (§G.2 paste + DESIGN_SPEC §5.5 review) needed source-text gates closed.
+- Self-served §G.2 (lines 1266-1297) + §I.5 acceptance (lines 1871-1872) from blueprint at `~/Downloads/Investment Portal Blueprint.md` — gotcha #2 (no Full Disk Access) **retired** this session, file is readable.
+- Surfaced autocomplete conflict between §G.2 (autocomplete from Massive) + Q6 lock (detail-endpoint only). Resolved by Terry: ship §I.5 minimum (validate-on-submit), defer autocomplete to THS-14 polish.
+- Terry called the loop directly: *"Why are we just going in circles here and accomplishing absolutely nothing?"* New durable rule locked: pre-impl notes close on **gates**, not on every micro-decision (`feedback_pre_impl_loop.md`).
+
+**Done — THS-5 stub-first build (steps 1-10):**
+1. RLS sanity ✓ — watchlists direct user_id, watchlist_tickers EXISTS-via-watchlists, both with `(SELECT auth.uid())` perf wrap.
+2. Default-watchlist app-side auto-create on first add ✓ — name `"Default"`, `is_default: true`.
+3. Server-component fetch ✓ — `lib/watchlist/queries.ts` joins `watchlist_tickers × tickers × companies × investment_memos × research_jobs` via PostgREST embedding; app-side reduce picks latest memo by `updated_at` and latest research_job by `created_at`.
+4. TanStack Table v8 ✓ — sortable + sticky-header columns. No virtualization yet (10-ticker scope).
+5. Filters ✓ — search (symbol+name), sector dropdown (derived from data), conviction range slider (base-ui 2-thumb), memo status all/has/pending/none.
+6. Add-ticker modal ✓ — `lib/watchlist/actions.ts` server action + Zod validation + stubbed `validateTicker` + service-role admin client for `tickers`/`companies` writes (those tables are public-read with service-role-only writes per RLS) + auth'd RLS-bound client for `watchlist_tickers`.
+7. Remove + 4s undo toast ✓ — sonner toast w/ undo button. `removeTicker` returns row data; `restoreTicker` recreates exactly.
+8. Empty / loading / error states ✓ — designed empty state ("Your watchlist is empty"), error toasts for invalid symbol / duplicate / failed-add.
+9. Keyboard ✓ — `N` opens add modal, `/` focuses search input. Both skip when target is INPUT/TEXTAREA/contenteditable.
+10. Acceptance run — Terry's hands. **9/9 functional checks passed in browser.**
+
+**Bug caught + fixed during acceptance:**
+- Target price field persisted across dialog opens. Root cause: RHF doesn't reliably reset uncontrolled `type="number"` inputs to `undefined`. Fix: switched target field to controlled `useState<string>` (decoupled from RHF), parse on submit. Symbol + conviction stay with RHF. (New gotcha #25.)
+
+**Done — PR #6 ship:**
+- Branch `ths-5-watchlist` cut from clean post-merge `main@a1c4db0`. Pushed at `27081b5`.
+- PR #6 opened against main: https://github.com/terry-zero-in/thesis/pull/6
+- `@codex review` triggered ([comment](https://github.com/terry-zero-in/thesis/pull/6#issuecomment-4344433429)) — advisory only, never gates merge.
+- Linear THS-5 → In Review with PR #6 attachment linked (via Linear MCP).
+- Vercel preview deploys clean: https://thesis-hsu71vcwu-terry-8893s-projects.vercel.app (state=success; `/login` 500s pre-THS-14 per gotcha #23, expected).
+
+**Held — step 11 (live Massive swap):**
+- Terry claimed rotation done + `.env.local:23` overwritten. Code re-read disk: mtime `Apr 29 07:03:08 2026` (original chat-paste timestamp), size `3022`, line-23 length `48` — **all unchanged.** Per just-locked `feedback_verify_claimed_state.md` rule: file wins, gate held, no live calls made, no second commit.
+- Chat-side relayed message later asked for step-11 results assuming execution. Code surfaced the contradiction directly with attribution. Pattern logged.
+
+**Decisions made (durable):**
+- (β) is the default workflow for tickets with deferred external-API gates: stub-first PR opens early, follow-up commit on same branch when gate clears, single squash-merge at end. Continuous preview-deploy review beats locally-held work.
+- Codex protocol confirmed advisory-only across THS-5 too. Never gates merge.
+- Schema is source of truth — doc conflicts resolve to blueprint Section D.
+- Default-on-first-action > default-on-account-creation in single-user systems.
+- Never seed via migration what an acceptance test must exercise.
+- YAGNI on shared abstractions until 2+ concrete consumers exist (DESIGN_SPEC §5.5 dashboard widget vs §G.2 standalone /watchlist = different shapes, share schema only).
+- Phase 1 = desktop-only.
+- Service-role admin client only for public-read-table writes; user-scoped writes always RLS-bound.
+- Target price field is controlled state, not RHF (gotcha #25).
+- Default watchlist name = `"Default"` (verbatim from §G.2 wireframe).
+- Codification: 2 new cross-project feedback memory files written + indexed in MEMORY.md under Engineering Discipline.
+
+**Verification:**
+- All Codex findings on PR #5 cleared pre-merge.
+- 9/9 keystroke acceptance test on PR #6 (Terry's browser).
+- `pnpm tsc --noEmit` clean throughout (one round of fixes for slider-array typing + RHF resolver mismatch + sector null coercion).
+- HANDOFF gotcha #2 (Full Disk Access blocked) empirically retired — Bash `ls` and Read tool both succeeded against `~/Downloads/...`.
+
+**Carrying forward — step 11 + THS-6:**
+- `.env.local:23` rotation must reflect on disk before live Massive code is written. Verify via `stat -f "%Sm size: %z" .env.local && awk 'NR==23 {print length($0)}' .env.local` against the unchanged-state baseline.
+- Then: write live `lib/massive/validate-ticker.ts` mapping `results.{name,primary_exchange,type,market_cap,branding.logo_url}`. Smoke-test AAPL + BRK-B + BRK.B in parallel via `node --env-file=.env.local scripts/probe-massive.mjs`. Add normalization rule for whichever of BRK-B/BRK.B returns 200. Second commit on same branch. Second `@codex review`. Hold for Codex + Terry. Squash-merge.
+- Then: cut `ths-6-ticker-detail` for `/tickers/[symbol]` page (Massive chart + FMP fundamentals + "Run Full Research" button + tabs).
+
+**Key gotchas surfaced this session:**
+- **Gotcha #2 RETIRED** — Full Disk Access works for Read tool + Bash `ls`/`stat`/`awk` against `~/Downloads/` and iCloud paths.
+- **Gotcha #25 NEW** — RHF + uncontrolled `type="number"` doesn't reset to `undefined`. Use controlled `useState<string>` for optional number fields, parse on submit.
+- **Gotcha #26 NEW** — `tickers` + `companies` are public-read with service-role-only writes per RLS. Use `lib/supabase/admin.ts` admin client for INSERTs.
+
+**Memory rules added:**
+- `feedback_verify_claimed_state.md` (cross-project): file state wins over claimed state when they conflict; surface conflicts with attribution.
+- `feedback_pre_impl_loop.md` (cross-project): pre-impl notes close on gates, not on micro-decisions; distinguish "needs Terry's call" from "Code picks default."
+
+---
 
 ### Session 2026-04-29 (Claude Code #212_04.28.2026 — THS-4 merge + Perplexity Checkpoint #1 + Codex protocol locked + PR #5)
 

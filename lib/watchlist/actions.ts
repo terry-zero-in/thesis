@@ -31,6 +31,9 @@ export async function addTicker(input: {
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Not authenticated" };
 
+  // Q-STORAGE U (2026-04-30): persist user-input form (e.g. BRK-B). validateTicker
+  // normalizes to dot internally for Massive; storage stays user-form because Phase 1
+  // sources disagree on canonical (Massive=dot, FMP=hyphen) and industry UI = hyphen.
   const symbol = parsed.data.symbol.toUpperCase();
   const validation = await validateTicker(symbol);
   if (!validation.valid) {

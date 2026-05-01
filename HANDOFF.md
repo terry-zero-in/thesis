@@ -1,37 +1,30 @@
 # Thesis — Session Handoff
 
-**Session date:** 2026-04-29 (continued from earlier 2026-04-29)
-**Closing Claude:** Code #220_04.29.2026 (08-042926), row `3df4e2ce-7cd5-4e50-8bfd-84599c58eed7`
-**Status at close:** THS-1 / THS-2 / THS-3 / THS-4 merged on `main`. PR #5 (radius fix) ✅ MERGED at `a1c4db0`. **THS-5 stub-first build PR #6 OPEN at `27081b5`** on `ths-5-watchlist` against main. Linear THS-5 → In Review with PR #6 attached. **Step 11 (live Massive swap) HELD** — `.env.local:23` rotation claimed but not reflected on disk per file-state-wins rule (`feedback_verify_claimed_state.md` codified this session).
+**Session date:** 2026-04-30 (continued from earlier 2026-04-29)
+**Closing Claude:** Code #227_04.29.2026 (16-042926), row `7c2b8f14-a048-4bb9-b389-7057b2f70287`
+**Status at close:** THS-1 through THS-5 merged on `main` (HEAD `9a84e42`). **THS-5 squash-merged via PR #6 at `9a84e42`** 2026-04-30 — Watchlist CRUD + live Massive ticker validation. Linear THS-5 → Done. Mid-session: `.env.local:23` rotation completed (file-state-wins gate cleared), live Massive client wired, Q-STORAGE U + Q-NORMALIZATION B locked, FMP convention verified (hyphen). Two follow-up tickets opened from Codex deferrals: **THS-15** (default-watchlist atomicity, P1) Backlog, and **THS-7 AC appended** (last-research filter on completed_at) Todo.
 
 ---
 
 ## NEXT 3-5 TASKS (start here)
 
-1. **Sanity checks.** `git fetch --all && git status && gh pr list --state open && supabase status`. Confirm `main` HEAD is `a1c4db0` (or newer), `ths-5-watchlist` HEAD is `27081b5` (or newer), PR #6 still open. Via Linear MCP confirm THS-5 still `In Review`.
+1. **Sanity checks.** `git fetch --all && git status && gh pr list --state open && supabase status`. Confirm `main` HEAD is `9a84e42` (or newer). No open PRs against thesis at session-start (THS-15 + THS-7 AC are open Linear tickets, not active branches). Via Linear MCP confirm THS-15 = Backlog, THS-7 = Todo (with appended completed_at AC), THS-6 = Todo.
 
-2. **VERIFY `.env.local:23` rotation BEFORE any step-11 code.** Run:
-   ```bash
-   stat -f "mtime: %Sm size: %z" .env.local
-   awk 'NR==23 {print "len:", length($0)}' .env.local
-   ```
-   Last-known-unchanged state at S220 close: mtime `Apr 29 07:03:08 2026`, size `3022`, line-23 length `48`.
-   - **If any of those changed → rotation reflected, proceed to task 3.**
-   - **If unchanged → ASK Terry directly. Do NOT echo or fabricate the value.** Surface using mtime/size/length only. The chat-pasted key (still on disk as of S220 close) is server-side invalidated per Terry's claim — running it against `api.massive.com` will 401.
+2. **THS-6 ramp — surface 7 pre-questions before any code.** Read `docs/design/DESIGN_SPEC.md` §6, §6.1, §6.2 + blueprint Section G.3 (Screen 3: Ticker Detail, line 1301) + blueprint Section I.3 MVP scope (line 1833). Then surface to Terry the 7 pre-decisions captured at S221 close (see queue in "Carry-forward — THS-6 pre-questions" section below). Lock answers Q-by-Q before scaffolding.
 
-3. **Step 11 — live Massive client swap.** Replace stub at `lib/massive/validate-ticker.ts` with live call:
-   - `GET https://api.massive.com/v3/reference/tickers/{ticker}` with `Authorization: Bearer ${MASSIVE_API_KEY}`
-   - 404 → `{ valid: false }` ; 200 + `results.active === false` → `{ valid: false }` ; 200 + active → return mapped fields
-   - Map: `results.name → name` · `results.primary_exchange → primaryExchange` · `results.type → type` · `results.market_cap → marketCap` · `results.branding?.logo_url → logoUrl`
-   - Symbol uppercased pre-fetch. Add normalization rule based on smoke-test result in task 4.
+3. **THS-6 external-API gates (do NOT start without).**
+   - **`FMP_API_KEY` rotation** — same disk gate as MASSIVE: Terry generates key at FMP dashboard, pastes into `.env.local`, file-state-wins verify (mtime + key length) before any FMP code lands. FMP convention = hyphen (verified S221, persisted form passes through cleanly).
+   - **Massive aggregates endpoint shape** — verify `/v2/aggs/ticker/{ticker}/range/{multiplier}/{timespan}/{from}/{to}` still works post-rebrand. One-shot AAPL probe at THS-6 start.
 
-4. **Smoke-test.** Write a one-off `scripts/probe-massive.mjs` (gitignored or scratch). Run via `node --env-file=.env.local scripts/probe-massive.mjs`. Probe 3 symbols in parallel:
-   - **AAPL** → assert 200 + `results.name` matches `/^Apple/`. Record exact name string in this HANDOFF (it informs UI display logic; quote verbatim per no-fabricated-quotes).
-   - **BRK-B** → record status code.
-   - **BRK.B** → record status code.
-   - Whichever of BRK-B / BRK.B returns 200 is canonical. Add a normalization rule in `validateTicker` to convert the other form (Section K seeds use `BRK-B` hyphen). Re-test post-normalization with the input `"BRK-B"`. Note `results.ticker_root` + `results.ticker_suffix` for documentation.
+4. **THS-6 cut + scaffold (after Q-locks land).** Branch `ths-6-ticker-detail` from `main@9a84e42` (or newer). Linear THS-6 → In Progress. Estimated 4-6 commits, rough order:
+   1. Massive aggregates client (`lib/massive/aggregates.ts` + types)
+   2. FMP client + key-metrics + profile (`lib/fmp/client.ts`, `lib/fmp/key-metrics.ts`, `lib/fmp/profile.ts`)
+   3. `/tickers/[symbol]` server-component scaffold — header strip + tab shell + action bar
+   4. Recharts OHLCV chart (`components/charts/PriceChart.tsx`) + timeframe selector
+   5. Fundamentals panel + Active Triggers stub + tab empty states
+   6. Polish — keyboard shortcuts (R/T/M/Esc), "15m delayed" label, empty states
 
-5. **Second commit on `ths-5-watchlist`** w/ message `THS-5: live Massive ticker validation` (plus body: endpoint live, AAPL + BRK-B smoke-tested, normalization rule applied, `Refs THS-5`). Push (do NOT squash with stub commit — keep separate for granular Codex review). Trigger `@codex review` via PR comment. Hold for Codex + Terry approval. After both: squash-merge PR #6, Linear THS-5 → Done, delete branch. Then cut `ths-6-ticker-detail` from new main.
+5. **Closeout checklist on THS-6 ship.** Squash-merge PR → Linear THS-6 → Done → docs-only commit on main per Path B (`feedback_doc_code_split.md`). After THS-7 ships, **Perplexity Checkpoint #2** runs (first end-to-end memo).
 
 ---
 
@@ -50,7 +43,9 @@
 ## Current repo state
 
 ```
-main:                   a1c4db0 — fix(ui): rounded-md radius on command palette per spec §7.9/§9.3 (#5)
+main:                   9a84e42 — THS-5: Watchlist CRUD with live Massive ticker validation (#6) [squash 2026-04-30]
+                            ├─ 6258126 — docs: closeout S220 — THS-5 PR #6 parked, file-state-wins rule locked
+                            ├─ a1c4db0 — fix(ui): rounded-md radius on command palette (#5)
                             ├─ 908536c — docs: closeout 2026-04-29 (S212)
                             ├─ cc342ea — docs: codex as advisory, not blocking
                             ├─ 2f5aa9e — THS-4 (#4)
@@ -58,9 +53,12 @@ main:                   a1c4db0 — fix(ui): rounded-md radius on command palett
                             ├─ 9142315 — THS-2 (#2)
                             └─ 94e622f — THS-1 (#1)
 
-ths-5-watchlist:        27081b5 — THS-5: Watchlist CRUD — TanStack table, add/remove modal, filters
-                              [PUSHED · PR #6 OPEN · CODEX REVIEW TRIGGERED]
-                              Live wiring (step 11) NOT YET COMMITTED — held on rotation gate
+ths-5-watchlist:        DELETED on origin (squash-merged PR #6 → main)
+
+Open Linear tickets (no active branches):
+- THS-15 — default-watchlist atomicity hardening (Backlog, Medium, Codex P1 deferral from PR #6)
+- THS-7  — Single-agent research (Todo, Urgent, has appended AC for last-research completed_at filter)
+- THS-6  — Ticker detail page (Todo, High, next ticket to pull)
 ```
 
 **Stack pinned:**
@@ -179,7 +177,7 @@ Pre-impl notes (per `/creative-build` Hard Gate) close when **gates** close, not
 - Linear THS-5 description updated this session: "Polygon" → "Massive (formerly Polygon)".
 - Blueprint text still says "Polygon" throughout — read as "Massive."
 
-### `validateTicker` signature (locked, stub matches; live swap in step 11)
+### `validateTicker` signature (LOCKED + SHIPPED 2026-04-30 at `442258d`, hardened at `a3a703b`)
 
 ```ts
 validateTicker(symbol: string) → {
@@ -191,7 +189,29 @@ validateTicker(symbol: string) → {
   logoUrl?: string,
 }
 ```
-Symbol uppercased pre-fetch. `404 → { valid: false }`. `results.active === false → { valid: false }`. Map fields per Massive's `/v3/reference/tickers/{ticker}` response shape.
+Symbol uppercased pre-fetch. `404 → { valid: false }`. `results.active === false → { valid: false }`. Map fields per Massive's `/v3/reference/tickers/{ticker}` response shape. **Throws** on missing `MASSIVE_API_KEY`, on 401, and on any non-OK non-404 response. Caller must wrap in try/catch (see `lib/watchlist/actions.ts:35-40`).
+
+### Step 11 — live Massive ticker validation (LOCKED + SHIPPED 2026-04-30 at `442258d`)
+
+- **Endpoint:** `GET https://api.massive.com/v3/reference/tickers/{ticker}` with `Authorization: Bearer ${MASSIVE_API_KEY}`.
+- **Normalization (Rule B):** uppercase first, then replace last `-X+` with `.X+` (regex `/-([A-Z]+)$/` → `.$1`). Internal to validateTicker only — matches Massive's `{root}.{suffix}` storage. No-op on non-class-share inputs.
+- **Response handling:** `404` → `{valid: false}`. `200 + results.active === false` → `{valid: false}`. `200 + active` → map `name`, `primary_exchange → primaryExchange`, `type`, `market_cap → marketCap`, `branding.logo_url → logoUrl`.
+- **4-case smoke (gitignored `/tmp/probe-massive.mjs`):**
+  - `AAPL` → 200, `name = "Apple Inc."` (verbatim)
+  - `BRK-B` → normalize → `BRK.B` → 200, `name = "BERKSHIRE HATHAWAY Class B"` (verbatim — note all-caps surname, "Class B" mixed-case)
+  - `BRK.B` → no-op → 200, idempotent with hyphen path
+  - `ZZZZ` → 404 → `{valid: false}`
+- **Throw-catch hardening at `a3a703b`:** addTicker wraps validateTicker in try/catch; throws return `{ok: false, error: "Could not validate symbol — try again."}`. Probe via `/tmp/probe-throw-catch.mjs` confirmed contract on real Massive 401.
+
+### Q-STORAGE — U LOCKED 2026-04-30 (intent comment at `lib/watchlist/actions.ts:34`)
+
+`watchlist_tickers.symbol` stores user-input form (hyphen-canonical for class shares, e.g. `BRK-B`). `validateTicker` normalizes to dot-form internally for Massive's endpoint; the persisted symbol stays in user form. Display = stored form. FMP-side calls (Phase 2+) hit symbol natively — Phase 1 sources disagree on canonical form: **Massive=dot, FMP=hyphen** (verified live 2026-04-30 via FMP-owned URLs `site.financialmodelingprep.com/financial-summary/BRK-B`), **EDGAR=CIK** (form-irrelevant). Both storage forms cost one transform at one boundary; tiebreak goes to user-input + UI-convention alignment (Yahoo/finviz/FMP/Section K seeds all use hyphen).
+
+Generalized rule: when boundaries are symmetric (one transform needed either way), pick the form that matches user expectation + UI convention. Storage form is for humans first, machines second.
+
+### Q5 isolate — LOCKED 2026-04-30 (DESIGN_SPEC §5.5 read confirmed)
+
+Watchlist data layer (`lib/watchlist/queries.ts` + `actions.ts`) stays separate from Dashboard `WatchlistSummary` (DESIGN_SPEC §5.5). §5.5 read confirmed: pure visual/layout spec for a dashboard widget — does NOT define a shared types contract, shared query helpers, or shared normalization. The §5.5 widget and the §G.2 standalone `/watchlist` page have different column sets (§5.5 = trigger proximity / sparkline / reco / conviction-mini / age; §G.2 = symbol+name / conviction / target / sector / memo status / last research). YAGNI on shared abstractions until 2+ concrete consumers materialize. Share schema only (`watchlist_tickers` + joins).
 
 ### Supplementary locks (durable, carry forward)
 
@@ -284,9 +304,9 @@ Already documented in §2 of SESSION-STARTUP SANITY CHECKS. Mirrored from `cc342
 
 Perplexity Checkpoint #1 ✅ CLEARED.
 
-- THS-1 ✅ · THS-2 ✅ · THS-3 ✅ · THS-4 ✅ · PR #5 ✅
-- **THS-5 🟡 In Review (PR #6, stub-first; step 11 held on rotation)**
-- THS-6 ⬜ Ticker detail (chart + fundamentals)
+- THS-1 ✅ · THS-2 ✅ · THS-3 ✅ · THS-4 ✅ · PR #5 ✅ · **THS-5 ✅** (squash-merged at `9a84e42` 2026-04-30)
+- **THS-6 ⬜ Todo — next ticket** (Ticker detail page; `/tickers/[symbol]` + Massive aggregates + FMP fundamentals)
+- THS-15 ⬜ Backlog (default-watchlist atomicity hardening — Codex P1 deferral from PR #6)
 - THS-7 ⬜ Single-agent research → **Perplexity Checkpoint #2**
 - THS-8 / THS-9 ⬜ Triggers
 - THS-10 ⬜ Memo generation
@@ -357,10 +377,22 @@ Perplexity Checkpoint #1 ✅ CLEARED.
 
 ## Memory rules touched this session
 
-- **NEW:** `feedback_verify_claimed_state.md` — file state wins over claimed state. Cross-project. Indexed in MEMORY.md.
-- **NEW:** `feedback_pre_impl_loop.md` — pre-impl notes close on gates, not micro-decisions. Cross-project.
-- **UPDATED:** `project_thesis.md` — THS-5 status block + provider rebrand + supplementary locks.
-- **UPDATED:** `MEMORY.md` index — Thesis priority line refreshed; 2 new feedback entries added under Engineering Discipline.
+- **NEW:** `feedback_codex_finding_triage.md` — per-PR Codex triage rule (real+cheap+contract-violating+lived → fix in-PR; real+migration → defer ticket; moot → defer to activating ticket). Re-flagged deferrals are evidence of correct triage, not new blockers. Codex never gates. Cross-project. Indexed in MEMORY.md.
+- **NEW:** `feedback_doc_code_split.md` — doc IS the change → same-branch; doc summarizes (HANDOFF/PROGRESS/MEMORY) → post-merge to main; doc + spec → same-branch. Supersedes prior overgeneralized "default = same-branch." Cross-project. Indexed in MEMORY.md.
+- **VERIFIED PERSISTED:** `feedback_verify_claimed_state.md` — already exists from S220, content current. Re-confirmed durability across sessions.
+- **UPDATED:** `MEMORY.md` index — 2 new feedback entries added under Engineering Discipline (lines 19-20).
+
+## Carry-forward — THS-6 pre-questions (surface to Terry at THS-6 start)
+
+These 7 decisions need locking before THS-6 scaffolds. Order: external-API gates first, then UX choices.
+
+1. **`FMP_API_KEY` rotation** — disk gate analogous to MASSIVE. Terry generates key → pastes into `.env.local` → file-state-wins verify before live FMP code lands. Same protocol as 2026-04-30 MASSIVE rotation.
+2. **Massive aggregates endpoint shape** — confirm `/v2/aggs/ticker/{ticker}/range/...` still works post-rebrand. One-shot AAPL probe at THS-6 start.
+3. **Chart timeframes** — Linear THS-6 says `1D/1M/3M/1Y`; blueprint G.3 wireframe shows `1D/5D/1M/3M/6M/1Y/All`. Pick set + default selected.
+4. **"15m delayed" label scope** — chart only, or everywhere price renders (header + fundamentals)? Exact copy.
+5. **Insider tab** — full deferral to Phase 2 (placeholder only) vs partial EDGAR Form 4 wiring in THS-6? Blueprint G.3 mentions Form 4s; likely Phase 2.
+6. **Empty tab treatment** — placeholder copy ("Research will appear here when run") vs fetched-but-no-data design ("No memos yet")?
+7. **Active Triggers panel pre-THS-8** — empty card with "No active triggers" copy, or hide entirely until THS-8 wires triggers?
 
 ## Onboarding packet for parallel Claude Chat
 
@@ -370,4 +402,4 @@ Perplexity Checkpoint #1 ✅ CLEARED.
 
 ## Continuation note for Terry to paste to next Claude
 
-> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full context. THS-1 through PR #5 are merged on `main` (HEAD `a1c4db0`). THS-5 PR #6 is OPEN at `27081b5` on `ths-5-watchlist` (stub-first build, Linear In Review). Step 11 (live Massive API swap) is HELD because `.env.local:23` rotation is claimed but not reflected on disk per the file-state-wins rule (`feedback_verify_claimed_state.md`). Run the SESSION-STARTUP SANITY CHECKS, verify `.env.local:23` rotation per task 2 of NEXT 3-5 TASKS, then ASK ME how to proceed — do not auto-assign. Do not echo or fabricate the chat-pasted key value; it is server-side invalidated.**
+> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` (latest docs commit on `main` — `git log --oneline main -- HANDOFF.md`) for full session context, file paths, and the NEXT 3-5 TASKS block. THS-1 through THS-5 are merged on `main` (HEAD `9a84e42`). PR #6 squash-merged 2026-04-30 with live Massive ticker validation + Q-STORAGE U + Q-NORMALIZATION B locked. THS-6 (Ticker detail page) is the next ticket; 7 pre-questions need answering before scaffolding (see "Carry-forward — THS-6 pre-questions" section). Two open Linear tickets from Codex deferrals: THS-15 (default-watchlist atomicity, P1) Backlog, THS-7 has appended AC (last-research completed_at filter, P2) Todo. Run SESSION-STARTUP SANITY CHECKS, then ASK Terry how to proceed — do not auto-assign. Chat-side handoff (Terry's `/thesis-closeout`) is source of truth for Q-lock rationale + decision archaeology + next-ticket strategy. This handoff is source of truth for repo/PR/Linear state + commit SHAs + memory file paths.**

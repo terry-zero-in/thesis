@@ -12,9 +12,9 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 | THS-2 | Supabase schema + RLS | ✅ Done 2026-04-28 | [#2](https://github.com/terry-zero-in/thesis/pull/2) | Squash-merged at `9142315`. All 23 Section D tables, RLS on every table, 11/11 RLS isolation tests passed, types/supabase.ts generated. |
 | THS-3 | Magic-link auth + protected middleware + sign-in | ✅ Done 2026-04-28 | [#3](https://github.com/terry-zero-in/thesis/pull/3) | Squash-merged at `fe4cdf3`. Two Codex review cycles: P2 host-protocol fix + P1 disable-auto-signup, both landed before merge. Live at https://thesis-nu.vercel.app. |
 | THS-4 | Sidebar + topnav + ⌘K palette | ✅ Done 2026-04-28 | [#4](https://github.com/terry-zero-in/thesis/pull/4) | Squash-merged at `2f5aa9e`. App shell `(app)/layout.tsx` + 10 sidebar routes + ⌘K palette + EmptyPanel. Two primitive-layer P1 fixes: `<Command>` cmdk root (`components/ui/command.tsx:63`) + selection-highlight styling (`bg-surface-hover` Tailwind utility, line 159). 6/6 functional ⌘K test passed before merge. **Perplexity Checkpoint #1 ✅ CLEARED 2026-04-29.** |
-| THS-5 | Watchlist CRUD | 🟡 In Review 2026-04-29 | [#6](https://github.com/terry-zero-in/thesis/pull/6) | Stub-first build at `27081b5` on `ths-5-watchlist`. Step 11 (live Massive swap) HELD on `.env.local:23` rotation gate. |
-| THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | — | |
-| THS-7 | Single-agent research (Company Research) | ⬜ Todo | — | **Perplexity Checkpoint #2: first end-to-end memo.** |
+| THS-5 | Watchlist CRUD | ✅ Done 2026-04-30 | [#6](https://github.com/terry-zero-in/thesis/pull/6) | Squash-merged at `9a84e42`. Stub (`27081b5`) → live Massive validation (`442258d`) → Q-STORAGE U intent comment (`f34a545`) → throw-catch hardening (`a3a703b`). Q-NORMALIZATION B + Q-STORAGE U + Q5 isolate locked. FMP convention verified hyphen. Codex deferrals → THS-15 (P1) + THS-7 AC (P2). |
+| THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | — | Next ticket. 7 pre-questions in HANDOFF "Carry-forward — THS-6 pre-questions" block. |
+| THS-7 | Single-agent research (Company Research) | ⬜ Todo | — | **Perplexity Checkpoint #2: first end-to-end memo.** AC appended 2026-04-30: `/watchlist` "Last Research" must filter `completed_at IS NOT NULL` and order by `completed_at DESC` (not `created_at`). |
 | THS-8 | Trigger definitions data model only | ⬜ Todo | — | |
 | THS-9 | Trigger evaluator (code + tests, no cron) | ⬜ Todo | — | Phase 1 = code only. Cron is Phase 2. |
 | THS-10 | Memo generation (synthesis agent) | ⬜ Todo | — | |
@@ -22,12 +22,13 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 | THS-12 | Decision log | ⬜ Todo | — | |
 | THS-13 | In-app alerts + realtime badge | ⬜ Todo | — | |
 | THS-14 | Polish + production deploy | ⬜ Todo | — | **Perplexity Checkpoint #4: pre-prod.** Vercel Pro deploy. |
+| THS-15 | THS-5 hardening: default-watchlist atomicity | ⬜ Backlog 2026-04-30 | — | Codex P1 deferral from PR #6. Partial unique index migration `CREATE UNIQUE INDEX ... ON watchlists (user_id) WHERE is_default = true` + atomic upsert in `lib/watchlist/actions.ts`. |
 
 ### Phase 1 acceptance (Section J)
 
 - [ ] Auth works (magic-link, single user, redirect on unauth)
 - [ ] Watchlist CRUD (add NVDA in <10s, persists, conviction + target stored)
-- [ ] Ticker detail loads real data (Polygon chart + FMP fundamentals)
+- [ ] Ticker detail loads real data (Massive chart + FMP fundamentals)
 - [ ] Research runs end-to-end on NVDA in <3 min
 - [ ] Memo generates ≥800 words with bear case ≥150
 - [ ] Approval flow stores decision + audit row
@@ -44,6 +45,49 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 ---
 
 ## Sessions
+
+### Session 2026-04-30 (Claude Code #227_04.29.2026 — THS-5 ship: live Massive validation + Q-STORAGE U + Q-NORMALIZATION B + 2 new durable rules)
+
+**Focus:** Resume THS-5 PR #6 from S220-parked state. Land live Massive ticker validation (step 11), close Q-STORAGE / Q-NORMALIZATION / Q5 questions, hand off Codex deferrals to follow-up tickets, squash-merge to main.
+
+**Done:**
+- **`.env.local:23` rotation gate cleared.** S220 baseline (mtime `Apr 29 07:03:08`, size `3022`, line-23 length `48`) verified unchanged at session start; Terry confirmed key-fine; AAPL probe with on-disk key returned 401 ("Unknown API Key"); Terry rotated key; new key pasted to `.env.local:23` via atomic awk-replace (mtime `Apr 29 18:23:06`, size unchanged because new key also 32 chars, length unchanged); AAPL probe HTTP 200 with verbatim `name = "Apple Inc."`. file-state-wins rule ran exactly as designed across multiple loops including Terry-said-fine override → empirical 401 contradiction → rotation.
+- **Step 11 — live Massive ticker validation shipped at `442258d`.** `lib/massive/validate-ticker.ts` replaces stub with `GET https://api.massive.com/v3/reference/tickers/{ticker}` + Bearer auth + Rule B normalization (regex `/-([A-Z]+)$/` → `.$1`) + 404→`{valid:false}` + active-check + mapped fields per locked signature. 4-case smoke (`/tmp/probe-massive.mjs`): AAPL → "Apple Inc.", BRK-B → normalize → BRK.B → "BERKSHIRE HATHAWAY Class B" (verbatim), BRK.B → idempotent, ZZZZ → 404 → `{valid:false}`. All 4 PASS.
+- **Q-NORMALIZATION B locked.** Replace last hyphen-suffix with dot before fetching Massive (matches Massive's `{root}.{suffix}` storage). Implementation centralized in validateTicker; not exposed to consumers.
+- **Q-STORAGE U locked at `f34a545`.** `watchlist_tickers.symbol` persists user-input form (hyphen). Initial decision was C (Massive canonical, dot); FMP blocker scan reversed to U after FMP-owned URLs verified hyphen convention live (`site.financialmodelingprep.com/financial-summary/BRK-B`). Both forms cost one transform; tiebreak = user expectation + UI convention (Yahoo/finviz/FMP/Section K all hyphen). validateTicker normalizes for Massive only; persisted symbol stays user-form. 3-line intent comment at `lib/watchlist/actions.ts:34` to make the contract durable in code.
+- **Q5 isolate confirmed via DESIGN_SPEC §5.5 read.** §5.5 is pure visual/layout (table chrome, column padding, sparkline dimensions) — no shared types, no shared queries, no DB-storage form. Watchlist data layer stays separate from Dashboard `WatchlistSummary`; share schema only.
+- **Codex P2 throw-catch hardening at `a3a703b`.** validateTicker has 3 throw paths (missing key, 401, non-OK 5xx); addTicker now wraps in try/catch returning `{ok: false, error: "Could not validate symbol — try again."}`. Probe `/tmp/probe-throw-catch.mjs` (real Massive 401) confirmed contract.
+- **PR #6 squash-merged at `9a84e42` 2026-04-30.** 4 commits: `27081b5` stub → `442258d` live → `f34a545` U comment → `a3a703b` throw-catch. Linear THS-5 → Done.
+- **Codex deferrals tracked.** **THS-15 created** (Backlog, Medium) — default-watchlist atomicity P1, partial unique index + atomic upsert. **THS-7 AC appended** — `/watchlist` last-research must filter `completed_at IS NOT NULL` and order by `completed_at DESC`.
+
+**Memory rules added:**
+- **NEW:** `feedback_codex_finding_triage.md` — per-PR triage rule. Re-flagged deferrals = evidence of correct triage, not new blockers. Codex never gates.
+- **NEW:** `feedback_doc_code_split.md` — doc IS change → same-branch; doc summarizes (HANDOFF/PROGRESS/MEMORY) → post-merge to main; doc + spec → same-branch. Supersedes prior overgeneralized "default = same-branch."
+- **VERIFIED PERSISTED:** `feedback_verify_claimed_state.md` — already exists from S220, content current.
+
+**Decisions made (durable):**
+- Q-STORAGE rule: when boundaries are symmetric (one transform either way), pick the form matching user expectation + UI convention. Storage is for humans first.
+- Codex finding triage rule: 3 buckets (real+cheap+contract-violating+lived → fix in-PR; real+migration → defer ticket; moot → defer to activating ticket). Codex never gates; Terry approval is the only merge gate.
+- Doc/code split rule: ledger-type docs (HANDOFF/PROGRESS/MEMORY) commit direct to main post-merge. Spec-paired docs ship same-branch. Don't conflate.
+- Pre-impl notes close on gates, not micro-decisions (already locked S220, re-applied this session — paid out).
+- File-state-wins rule overrode chat-side "key is fine" claim → empirical 401 → rotation (paid out THS-5 specifically; rule re-confirmed durable).
+
+**Verification:**
+- Probes: 4-case happy-path (AAPL/BRK-B/BRK.B/ZZZZ) 4/4 PASS at `442258d`. Throw-catch probe PASS at `a3a703b`. Both reproducible via `/tmp/probe-massive.mjs` + `/tmp/probe-throw-catch.mjs`.
+- `pnpm tsc --noEmit` clean throughout.
+- All Codex findings on PR #6: 1 P1 (default-watchlist race) + 2 P2 (last-research stale, throw-catch). Throw-catch fixed in-PR; other 2 deferred to follow-up tickets.
+
+**Carrying forward — THS-6 next:**
+- 7 pre-questions in HANDOFF carry-forward block — answer Q-by-Q before scaffolding.
+- External-API gates: FMP_API_KEY rotation + Massive aggregates endpoint shape probe.
+- Build order: 4-6 commits estimated (Massive aggregates client → FMP client → server-component scaffold → Recharts chart → fundamentals panel → polish).
+- DESIGN_SPEC §6.1 + §6.2 in scope; §6.3-§6.6 (memo / right rail / bear case) downstream tickets.
+
+**Key gotchas surfaced this session:**
+- macOS zsh has `status` as read-only variable — use `http`, `pre_size`, etc. instead of `status` in shell vars.
+- SSH agent dropped mid-session twice; gh-token HTTPS push (`git push https://x-access-token:$(gh auth token)@github.com/...`) is the reliable fallback.
+- FMP demo key rejected on profile + search endpoints; verifying ticker convention requires WebSearch on FMP-owned URLs (site.financialmodelingprep.com indexed publicly).
+- Massive returns `Unknown API Key` for completely-unrecognized keys (vs `Invalid` for malformed) — useful 401 distinction for rotation diagnostics.
 
 ### Session 2026-04-29 (Claude Code #220_04.29.2026 — PR #5 merge + THS-5 stub-first build PR #6 + Massive rebrand + 2 new durable rules)
 

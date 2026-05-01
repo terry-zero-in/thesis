@@ -8,35 +8,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const SURFACE_TOKENS = [
-  { name: "--color-bg", hex: "#0A0B0E", note: "App canvas + sidebar (merged)" },
-  { name: "--color-surface", hex: "#14161B", note: "Panels, KPI hover, search" },
-  { name: "--color-surface-2", hex: "#1A1D24", note: "Inputs, badges, tracks" },
-  { name: "--color-surface-hover", hex: "#1F232B", note: "Row hover" },
-  { name: "--color-border", hex: "#232730", note: "Strong borders (rare)" },
-  { name: "--color-border-subtle", hex: "#1A1D24", note: "Default panel/section borders" },
+  { name: "--color-bg", hex: "#0B0C0F", note: "Page canvas, topbar, table headers" },
+  { name: "--color-sidebar", hex: "#06070A", note: "Sidebar (distinct from canvas)" },
+  { name: "--color-surface", hex: "#15171C", note: "Panels, cards, KPI strip" },
+  { name: "--color-surface-2", hex: "#1B1E25", note: "Nested cards, badges, tracks" },
+  { name: "--color-surface-elevated", hex: "#22262E", note: "Modals, dropdowns, tooltips, popovers" },
+  { name: "--color-surface-hover", hex: "#232730", note: "Row/item hover" },
+  { name: "--color-border", hex: "#2A2F38", note: "Visible borders, dividers in focus" },
+  { name: "--color-border-subtle", hex: "#1F2229", note: "Default panel/section borders" },
 ];
 
 const TEXT_TOKENS = [
-  { name: "--color-text-1", hex: "#F0F1F3", note: "Primary, numerics, headings" },
-  { name: "--color-text-2", hex: "#9298A3", note: "Secondary, body, nav inactive" },
-  { name: "--color-text-3", hex: "#5F6571", note: "Tertiary, labels, timestamps" },
+  { name: "--color-text-1", hex: "#ECEDEF", note: "Primary, numerics, headings" },
+  { name: "--color-text-2", hex: "#CFD3DA", note: "Secondary, body (BRIGHTER vs v1.1)" },
+  { name: "--color-text-3", hex: "#7A818D", note: "Tertiary, labels, timestamps" },
 ];
 
 const ACCENT_TOKENS = [
-  { name: "--color-accent", hex: "#4D5BFF", note: "Active nav, primary CTAs" },
-  { name: "--color-accent-soft", hex: "rgba(77,91,255,.12)", note: "Active nav badge bg" },
+  { name: "--color-accent", hex: "#4D5BFF", note: "Active nav, primary CTAs (Cypher Indigo)" },
+  { name: "--color-accent-soft", hex: "rgba(77,91,255,.10)", note: "Active nav badge bg" },
   { name: "--color-accent-hover", hex: "#6573FF", note: "Accent CTA hover" },
 ];
 
 const STATUS_TOKENS = [
-  { name: "--color-success", hex: "#4FB87A", note: "Up, BUY, approve, bull" },
-  { name: "--color-success-soft", hex: "rgba(79,184,122,.12)", note: "BUY pill bg" },
-  { name: "--color-warning", hex: "#DDA84F", note: "HOLD, high severity" },
-  { name: "--color-warning-soft", hex: "rgba(221,168,79,.12)", note: "HOLD pill bg" },
-  { name: "--color-danger", hex: "#E26B6B", note: "Down, SELL, crit, bear" },
-  { name: "--color-danger-soft", hex: "rgba(226,107,107,.12)", note: "SELL pill bg" },
-  { name: "--color-info", hex: "#5B8FFF", note: "Med severity, proximity" },
-  { name: "--color-info-soft", hex: "rgba(91,143,255,.10)", note: "Info halo" },
+  { name: "--color-success", hex: "#30A46C", note: "Up, BUY, approve, bull" },
+  { name: "--color-success-soft", hex: "rgba(48,164,108,.12)", note: "BUY pill bg" },
+  { name: "--color-warning", hex: "#F5A524", note: "HOLD, high severity" },
+  { name: "--color-warning-soft", hex: "rgba(245,165,36,.12)", note: "HOLD pill bg" },
+  { name: "--color-danger", hex: "#E5484D", note: "Down, SELL, crit, bear" },
+  { name: "--color-danger-soft", hex: "rgba(229,72,77,.12)", note: "SELL pill bg" },
+  { name: "--color-info", hex: "#8B5CF6", note: "Med severity, info flag (violet)" },
+  { name: "--color-info-soft", hex: "rgba(139,92,246,.12)", note: "Info halo" },
+  { name: "--color-score-amber", hex: "#FCD34D", note: "Score numbers <50 (distinct from warning)" },
 ];
 
 const TYPE_LADDER = [
@@ -62,10 +65,10 @@ const NUMERIC_ROWS = [
 ];
 
 const SEVERITY = [
-  { name: "Crit", token: "danger", hex: "#E26B6B" },
-  { name: "High", token: "warning", hex: "#DDA84F" },
-  { name: "Med", token: "info", hex: "#5B8FFF" },
-  { name: "Low", token: "text-3", hex: "#5F6571", lowOpacity: true },
+  { name: "Crit", token: "danger", hex: "#E5484D" },
+  { name: "High", token: "warning", hex: "#F5A524" },
+  { name: "Med", token: "info", hex: "#8B5CF6" },
+  { name: "Low", token: "text-3", hex: "#7A818D", lowOpacity: true },
 ];
 
 const RECO_PILLS = [
@@ -169,7 +172,7 @@ export default function TokensPage() {
               <h1 className="text-[18px] font-medium tracking-[-0.015em]">Token verification</h1>
               <span className="h-3 w-px" style={{ background: "var(--color-border)" }} />
               <span className="text-[13px]" style={{ color: "var(--color-text-2)" }}>
-                DESIGN_SPEC v1.0 · THS-1
+                DESIGN_SPEC v2.0 · THS-1 (re-anchored to Basis canon — THS-DS-1)
               </span>
             </div>
             <p className="mt-2 text-[12px]" style={{ color: "var(--color-text-3)" }}>

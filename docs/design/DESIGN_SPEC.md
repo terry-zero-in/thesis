@@ -1,8 +1,15 @@
-# AI Thesis — Design System Spec v1.0
+# AI Thesis — Design System Spec v2.0
 
-**Status:** Awaiting Terry's approval. Pixel-perfect adherence required per "Match exactly = EVERYTHING".
-**Date:** 2026-04-27
+**Status:** LOCKED — Pixel-perfect adherence required per "Match exactly = EVERYTHING".
+**Date:** 2026-05-01 (re-anchor) · 2026-04-27 (v1.0 origin)
 **Authority:** This document supersedes ALL prior design decisions (HANDOFF.md token block from 0ff8b34, blueprint defaults, prior memory entries). Source of truth for any UI work going forward.
+
+**Authoritative companions:**
+- `docs/design/card-spec.md` v1.0 — card system patterns (Headline, Multi-metric, Composition+breakdown, Action lists, Severity 2-channel rule, Conviction ladder, Number formatting, Card chrome, Elevated overlay recipe)
+- `docs/design/chart-spec.md` v1.0 — chart cross-cutting principles + chart-type playbook + visx primitive references
+- `docs/design/thesis-design-system.css` v2.0 — token sheet (re-anchored to Basis canon 2026-05-01)
+
+When this DESIGN_SPEC, card-spec, and chart-spec all touch a pattern: **card-spec / chart-spec are authoritative for cards and charts.** This document is authoritative for app shell, page-level layout, and screen composition.
 
 ---
 
@@ -10,7 +17,7 @@
 
 | Asset | Path |
 |---|---|
-| Token sheet | `docs/design/thesis-design-system.css` (392 lines, verbatim copy of Claude Chat's `Basis Design System.css`) |
+| Token sheet | `docs/design/thesis-design-system.css` (v2.0 — Basis canon re-anchor, 2026-05-01) |
 | Dashboard mockup | `docs/design/mockups/dashboard-v2.html` (246KB) |
 | Full portal mockup | `docs/design/mockups/portal-v4.html` (237KB) |
 | Screenshot 01 | `docs/design/screenshots/01-dashboard-top.png` (greet + KPI + macro + pending + feed + pulse) |
@@ -33,22 +40,33 @@ These reference assets are versioned in the repo. Any future change to the desig
 
 Use exactly. Never inline a hex value in component code; always reference these via Tailwind `@theme` aliases.
 
-### Surface
+### Surface (Basis canon, S58 lock — 2026-05-01)
 | Token | Hex | Usage |
 |---|---|---|
-| `--bg` | `#0A0B0E` | App canvas + sidebar (merged single plane) + topbar |
-| `--surface` | `#14161B` | Panels, KPI cards on hover, search input |
-| `--surface-2` | `#1A1D24` | Inputs/badges/bar tracks/scrollbar |
-| `--surface-hover` | `#1F232B` | Row hover state (tables, lists) |
-| `--border` | `#232730` | Strong borders (rare; scrollbar thumb, kbd) |
-| `--border-subtle` | `#1A1D24` | All standard panel/section borders (default) |
+| `--bg` | `#0B0C0F` | Page canvas, topbar, table headers |
+| `--sidebar` | `#06070A` | Sidebar (distinct from canvas — Basis S61 lock) |
+| `--surface` | `#15171C` | Primary panels, cards, KPI strip |
+| `--surface-2` | `#1B1E25` | Nested cards, badge backgrounds, inset blocks |
+| `--surface-elevated` | `#22262E` | NEW — lifted decision cards, modals, dropdowns, tooltips |
+| `--surface-hover` | `#232730` | Row/item hover states |
+| `--border` | `#2A2F38` | Visible borders, dividers in focus |
+| `--border-subtle` | `#1F2229` | Hairlines, section dividers, default card borders |
 
-### Text
+### Intra-card divider system (NEW — three-tier)
+| Token | Value | Usage |
+|---|---|---|
+| `--border-06` | `rgba(255,255,255,0.06)` | Subtle: intra-card row dividers (default) |
+| `--border-08` | `rgba(255,255,255,0.08)` | Default: section dividers, sidecar internal |
+| `--border-12` | `rgba(255,255,255,0.12)` | Strong: separation of major regions |
+
+Used inside cards for stacked rows, never on outer card borders. See `card-spec.md §Faint dividing lines`.
+
+### Text (V4 canonical — bright-in-dark per Linear principle)
 | Token | Hex | Usage |
 |---|---|---|
-| `--text-1` | `#F0F1F3` | Primary, numerics, headings |
-| `--text-2` | `#9298A3` | Secondary, body, nav inactive |
-| `--text-3` | `#5F6571` | Tertiary, labels, timestamps |
+| `--text-1` | `#ECEDEF` | Primary, numerics, headings, hover state |
+| `--text-2` | `#CFD3DA` | Secondary, body, nav inactive (BRIGHTER vs v1.1) |
+| `--text-3` | `#7A818D` | Tertiary, labels, timestamps (more visible vs v1.1) |
 
 ### Accent (Brand / neutral interactive)
 | Token | Hex | Usage |
@@ -57,18 +75,21 @@ Use exactly. Never inline a hex value in component code; always reference these 
 | `--accent-soft` | `rgba(77, 91, 255, 0.12)` | Active nav badge bg, accent chip bg |
 | `--accent-hover` | `#6573FF` | Hover state on accent CTAs |
 
-### Status (functional severity)
+### Status (functional severity — Basis Q13 GOLD STANDARD saturated palette)
 | Token | Hex | Soft (12% alpha) | Usage |
 |---|---|---|---|
-| `--success` | `#4FB87A` | `rgba(79, 184, 122, 0.12)` | Up deltas, BUY pill, approve, bull pressure |
-| `--warning` | `#DDA84F` | `rgba(221, 168, 79, 0.12)` | HOLD pill, high severity, warn pulse-bar |
-| `--danger` | `#E26B6B` | `rgba(226, 107, 107, 0.12)` | Down deltas, SELL pill, crit severity, bear pressure |
-| `--info` | `#5B8FFF` | `rgba(91, 143, 255, 0.10)` | Med severity, proximity bar default, second composition slice |
+| `--success` | `#30A46C` | `rgba(48, 164, 108, 0.12)` | Up deltas, BUY pill, approve, bull pressure |
+| `--warning` | `#F5A524` | `rgba(245, 165, 36, 0.12)` | HOLD pill, high severity, warn pulse-bar |
+| `--danger` | `#E5484D` | `rgba(229, 72, 77, 0.12)` | Down deltas, SELL pill, crit severity, bear pressure |
+| `--info` | `#8B5CF6` | `rgba(139, 92, 246, 0.12)` | Med severity, informational flag (HUE SHIFT vs v1.1: blue → violet) |
+| `--score-amber` | `#FCD34D` | n/a | NEW — score numbers <50 (distinct from `--warning` to avoid same-row sync) |
+
+See `card-spec.md §4` for the 2-channel severity rule (bar color independent from score number color).
 
 ### Body atmosphere
 Subtle radial gradients fixed to the body, behind everything (`z-index: 0`):
-- `radial-gradient(circle at 20% 0%, rgba(77,91,255,0.025) 0%, transparent 40%)`
-- `radial-gradient(circle at 80% 0%, rgba(91,143,255,0.015) 0%, transparent 40%)`
+- `radial-gradient(circle at 20% 0%, rgba(77,91,255,0.025) 0%, transparent 40%)` (accent — unchanged)
+- `radial-gradient(circle at 80% 0%, rgba(139,92,246,0.015) 0%, transparent 40%)` (info violet — re-anchored to v2.0 hue)
 
 Almost imperceptible — never amplify.
 
@@ -251,9 +272,9 @@ Below the KPI row, the dashboard splits into a 3-col grid: `1.4fr 1fr 0.85fr`, g
   - Head row: name (12px `--text-1`) + pct (mono 12px `--text-2`)
   - Bar: 6px `--surface-2` track, 3px radius, fill `c1`–`c5` palette:
     - `c1` `--accent` `#4D5BFF`
-    - `c2` `--info` `#5B8FFF`
-    - `c3` `#7B6FD8` (violet)
-    - `c4` `#5B8FFF` opacity 0.7 (info-faded)
+    - `c2` `--info` `#8B5CF6`
+    - `c3` `#7B6FD8` (violet bridge between c1/c2)
+    - `c4` `#8B5CF6` opacity 0.7 (info-faded)
     - `c5` `--text-3`
 
 ---
@@ -313,9 +334,9 @@ Two stacked panels:
 ### 7.1 Severity legend (4 levels)
 | Level | Color | Soft bg | Use |
 |---|---|---|---|
-| Crit | `--danger` `#E26B6B` | `danger-soft` | Stop-loss breach, broken thesis |
-| High | `--warning` `#DDA84F` | `warning-soft` | Earnings miss, downgrade |
-| Med | `--info` `#5B8FFF` | `info-soft` | Technical setup, target proximity |
+| Crit | `--danger` `#E5484D` | `danger-soft` | Stop-loss breach, broken thesis |
+| High | `--warning` `#F5A524` | `warning-soft` | Earnings miss, downgrade |
+| Med | `--info` `#8B5CF6` | `info-soft` | Technical setup, target proximity |
 | Low | `--text-3` 50% opacity | n/a | Background events |
 
 ### 7.2 Status pills
@@ -410,38 +431,58 @@ These will be designed against the floor — sketches go in this spec under sect
 
 ## 10. Implementation handoff
 
-**Tailwind v4 `@theme` block** — exact mapping for `app/globals.css`:
+**Tailwind v4 `@theme` block** — exact mapping for `app/globals.css` (v2.0 — Basis canon, 2026-05-01):
 
 ```css
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0A0B0E;
-  --color-surface: #14161B;
-  --color-surface-2: #1A1D24;
-  --color-surface-hover: #1F232B;
-  --color-border: #232730;
-  --color-border-subtle: #1A1D24;
+  /* Surface */
+  --color-bg: #0B0C0F;
+  --color-sidebar: #06070A;
+  --color-surface: #15171C;
+  --color-surface-2: #1B1E25;
+  --color-surface-elevated: #22262E;
+  --color-surface-hover: #232730;
+  --color-border: #2A2F38;
+  --color-border-subtle: #1F2229;
 
-  --color-text-1: #F0F1F3;
-  --color-text-2: #9298A3;
-  --color-text-3: #5F6571;
+  /* Text */
+  --color-text-1: #ECEDEF;
+  --color-text-2: #CFD3DA;
+  --color-text-3: #7A818D;
 
+  /* Accent */
   --color-accent: #4D5BFF;
-  --color-accent-soft: rgba(77, 91, 255, 0.12);
+  --color-accent-soft: rgba(77, 91, 255, 0.10);
   --color-accent-hover: #6573FF;
 
-  --color-success: #4FB87A;
-  --color-success-soft: rgba(79, 184, 122, 0.12);
-  --color-warning: #DDA84F;
-  --color-warning-soft: rgba(221, 168, 79, 0.12);
-  --color-danger: #E26B6B;
-  --color-danger-soft: rgba(226, 107, 107, 0.12);
-  --color-info: #5B8FFF;
-  --color-info-soft: rgba(91, 143, 255, 0.10);
+  /* Status (Basis Q13 GOLD STANDARD saturated palette) */
+  --color-success: #30A46C;
+  --color-success-soft: rgba(48, 164, 108, 0.12);
+  --color-warning: #F5A524;
+  --color-warning-soft: rgba(245, 165, 36, 0.12);
+  --color-danger: #E5484D;
+  --color-danger-soft: rgba(229, 72, 77, 0.12);
+  --color-info: #8B5CF6;
+  --color-info-soft: rgba(139, 92, 246, 0.12);
+
+  /* Score severity */
+  --color-score-amber: #FCD34D;
 
   --font-sans: "Geist", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Three-tier intra-card divider system (use as raw rgba where var refs aren't available) */
+:root {
+  --border-06: rgba(255, 255, 255, 0.06);
+  --border-08: rgba(255, 255, 255, 0.08);
+  --border-12: rgba(255, 255, 255, 0.12);
+
+  --overlay-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 html, body { background: var(--color-bg); color: var(--color-text-1); font-family: var(--font-sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
@@ -451,7 +492,7 @@ html, body { background: var(--color-bg); color: var(--color-text-1); font-famil
 body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background-image:
     radial-gradient(circle at 20% 0%, rgba(77,91,255,0.025) 0%, transparent 40%),
-    radial-gradient(circle at 80% 0%, rgba(91,143,255,0.015) 0%, transparent 40%);
+    radial-gradient(circle at 80% 0%, rgba(139,92,246,0.015) 0%, transparent 40%);
 }
 ```
 
@@ -488,3 +529,53 @@ This page is a regression check — every UI the project ships must pull tokens 
 This spec is the source of truth for AI Thesis design. HANDOFF.md token block (`#121415 / #2E5BFF / #3FB950` set) is formally retired. Updated 2026-04-28.
 
 **Per-ticket discipline:** new screens get empty/loading/error states drafted in their own ticket, reviewed against this spec, then implemented. No bulk pre-design across tickets.
+
+---
+
+## 13. Changelog
+
+### v2.0 (2026-05-01) — Basis canon re-anchor (THS-DS-1)
+
+Re-anchored tokens to Basis canon. Added `card-spec.md` (card system) and `chart-spec.md` (chart principles). Token block in `thesis-design-system.css` supersedes prior values; all hex changes captured in `thesis-design-system.css` header comment.
+
+**Hex changes (v1.1 → v2.0):**
+
+| Token | v1.1 | v2.0 | Note |
+|---|---|---|---|
+| `--bg` | `#0A0B0E` | `#0B0C0F` | Trivial; warmer |
+| `--sidebar` | (merged with `--bg`) | `#06070A` | NEW — distinct from canvas (Basis S61 lock) |
+| `--surface` | `#14161B` | `#15171C` | Subtle |
+| `--surface-2` | `#1A1D24` | `#1B1E25` | Subtle |
+| `--surface-elevated` | (none) | `#22262E` | NEW — overlays / modals / tooltips |
+| `--surface-hover` | `#1F232B` | `#232730` | Subtle |
+| `--border` | `#232730` | `#2A2F38` | More visible |
+| `--border-subtle` | `#1A1D24` | `#1F2229` | Slight |
+| `--text-1` | `#F0F1F3` | `#ECEDEF` | Slight |
+| `--text-2` | `#9298A3` | `#CFD3DA` | **BRIGHTER** — Linear bright-in-dark principle |
+| `--text-3` | `#5F6571` | `#7A818D` | More visible |
+| `--success` | `#4FB87A` | `#30A46C` | More saturated (Basis Q13 GOLD STANDARD) |
+| `--warning` | `#DDA84F` | `#F5A524` | More saturated |
+| `--danger` | `#E26B6B` | `#E5484D` | More saturated |
+| `--info` | `#5B8FFF` | `#8B5CF6` | **HUE SHIFT** — blue → violet (Basis S55 D1c lock) |
+| `--score-amber` | (none) | `#FCD34D` | NEW — score numbers <50, distinct from `--warning` |
+| `--accent` | `#4D5BFF` | `#4D5BFF` | UNCHANGED — Cypher Indigo locked across both products |
+| `--accent-hover` | `#6573FF` | `#6573FF` | UNCHANGED |
+
+**Three-tier intra-card divider system added:** `--border-06` / `--border-08` / `--border-12` for stacked rows inside cards (never on outer card borders).
+
+**Typography:** Geist Sans + JetBrains Mono unchanged. Body 14px / line-height 1.5 unchanged.
+
+**Scope of this PR (THS-DS-1):**
+- `docs/design/thesis-design-system.css` v2.0 (replaced)
+- `docs/design/card-spec.md` v1.0 (created)
+- `docs/design/chart-spec.md` v1.0 (created)
+- `docs/design/DESIGN_SPEC.md` v2.0 (this file — §2 tokens, §5.6 sector palette, §7.1 severity legend, §10 @theme block, §13 changelog)
+- `app/globals.css` token block (re-anchored to v2.0)
+
+**Rationale:** AI Thesis and Basis are both Terry's products benchmarking against Linear / Mercury / Stripe. Token drift between them was creating visual cleanup debt and a credibility split. Re-anchoring kills the drift in one commit so future card review compounds across both products instead of being relitigated per-product. The 47 sessions of Basis review that produced `card-gold-standard.md` v1.2 and `charts-spec.md` now compound directly into AI Thesis via the ported `card-spec.md` and `chart-spec.md`.
+
+**Discipline locked by this migration:** Token source-of-truth files travel together. Whenever `thesis-design-system.css` changes in the future, every served-token surface (`app/globals.css`, any `@theme` blocks here, any `tailwind.config` token refs) re-anchors in the same PR. No staggered token migrations.
+
+### v1.0 (2026-04-27) — Initial spec lock
+
+Initial AI Thesis design system spec. Tokens copied verbatim from Basis Design System.css at the time. Sections §1–§12 locked. Reference assets (mockups + screenshots) versioned in repo.

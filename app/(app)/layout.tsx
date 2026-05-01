@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { CommandPaletteProvider } from "@/components/shell/command-palette";
 import { Sidebar } from "@/components/shell/sidebar";
 import { Topbar } from "@/components/shell/topbar";
+import { Toaster } from "@/components/ui/sonner";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppShellLayout({
@@ -29,6 +30,7 @@ export default async function AppShellLayout({
         <Sidebar />
         <main className="min-w-0">{children}</main>
       </div>
+      <Toaster />
     </CommandPaletteProvider>
   );
 }

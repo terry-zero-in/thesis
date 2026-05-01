@@ -35,7 +35,15 @@ export async function addTicker(input: {
   // normalizes to dot internally for Massive; storage stays user-form because Phase 1
   // sources disagree on canonical (Massive=dot, FMP=hyphen) and industry UI = hyphen.
   const symbol = parsed.data.symbol.toUpperCase();
-  const validation = await validateTicker(symbol);
+
+  let validation;
+  try {
+    validation = await validateTicker(symbol);
+  } catch (err) {
+    console.error("[addTicker] validateTicker threw:", err);
+    return { ok: false, error: "Could not validate symbol — try again." };
+  }
+
   if (!validation.valid) {
     return { ok: false, error: `Symbol "${symbol}" not found.` };
   }

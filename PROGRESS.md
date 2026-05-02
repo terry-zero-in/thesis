@@ -13,7 +13,8 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 | THS-3 | Magic-link auth + protected middleware + sign-in | ✅ Done 2026-04-28 | [#3](https://github.com/terry-zero-in/thesis/pull/3) | Squash-merged at `fe4cdf3`. Two Codex review cycles: P2 host-protocol fix + P1 disable-auto-signup, both landed before merge. Live at https://thesis-nu.vercel.app. |
 | THS-4 | Sidebar + topnav + ⌘K palette | ✅ Done 2026-04-28 | [#4](https://github.com/terry-zero-in/thesis/pull/4) | Squash-merged at `2f5aa9e`. App shell `(app)/layout.tsx` + 10 sidebar routes + ⌘K palette + EmptyPanel. Two primitive-layer P1 fixes: `<Command>` cmdk root (`components/ui/command.tsx:63`) + selection-highlight styling (`bg-surface-hover` Tailwind utility, line 159). 6/6 functional ⌘K test passed before merge. **Perplexity Checkpoint #1 ✅ CLEARED 2026-04-29.** |
 | THS-5 | Watchlist CRUD | ✅ Done 2026-04-30 | [#6](https://github.com/terry-zero-in/thesis/pull/6) | Squash-merged at `9a84e42`. Stub (`27081b5`) → live Massive validation (`442258d`) → Q-STORAGE U intent comment (`f34a545`) → throw-catch hardening (`a3a703b`). Q-NORMALIZATION B + Q-STORAGE U + Q5 isolate locked. FMP convention verified hyphen. Codex deferrals → THS-15 (P1) + THS-7 AC (P2). |
-| THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | — | Next ticket. 7 pre-questions in HANDOFF "Carry-forward — THS-6 pre-questions" block. |
+| THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | — | Next ticket. Lib infrastructure prep shipped via [#8](https://github.com/terry-zero-in/thesis/pull/8) at `c72c6f2` 2026-05-01 (`lib/fmp/` + `lib/massive/aggregates.ts` + helper lift to `lib/massive/symbols.ts`). 4 of 8 Q-locks now LOCKED (Q-MASSIVE-AGGS, Q-CHART-TIMEFRAMES, Q-EXTENDED-HOURS, files-travel-together scope). Q-FMP-KEY pending Terry rotation. Page work resumes when rotation lands. |
+| THS-16 | THS-DS-1: Re-anchor design system to Basis canon | ✅ Done 2026-05-01 | [#7](https://github.com/terry-zero-in/thesis/pull/7) | Squash-merged at `00bb968`. AI Thesis design tokens, semantic colors, intra-card divider system, and card/chart specs re-anchored to match Basis canon verbatim. v1.1 → v2.0 migration: bg/sidebar/surface hex shifts, text-2 brighter (Linear bright-in-dark), success/warning/danger more saturated, info hue shift blue→violet (#8B5CF6), `--score-amber` new. Cypher Indigo `#4D5BFF` UNCHANGED. Files-travel-together rule locked. Linear THS-16 manually moved to Done (GitHub auto-integration didn't fire). |
 | THS-7 | Single-agent research (Company Research) | ⬜ Todo | — | **Perplexity Checkpoint #2: first end-to-end memo.** AC appended 2026-04-30: `/watchlist` "Last Research" must filter `completed_at IS NOT NULL` and order by `completed_at DESC` (not `created_at`). |
 | THS-8 | Trigger definitions data model only | ⬜ Todo | — | |
 | THS-9 | Trigger evaluator (code + tests, no cron) | ⬜ Todo | — | Phase 1 = code only. Cron is Phase 2. |
@@ -45,6 +46,46 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 ---
 
 ## Sessions
+
+### Session 2026-05-01 (Claude Code #234_05.01.2026 — THS-DS-1 + THS-6 prep merged: design system v2.0 live, lib/fmp + lib/massive data clients shipped, 4 new durable rules)
+
+**Focus:** Sequence two merges into main — THS-DS-1 (PR #7, design system re-anchor work from prior session) and THS-6 prep infrastructure (PR #8, lib data clients drafted this session). Lock 4 outstanding Q-questions for THS-6 page work (Q-MASSIVE-AGGS, Q-CHART-TIMEFRAMES, Q-EXTENDED-HOURS, plus files-travel-together scope clarification).
+
+**Done:**
+- **Massive aggregates probe.** Verified `/v2/aggs/ticker/{T}/range/{multiplier}/{timespan}/{from}/{to}` works post-rebrand at base `https://api.massive.com` with Bearer auth. Three timespans probed (hour/day/week + bad-ticker error case). Bar-field shape `[c, h, l, n, o, t, v, vw]` IDENTICAL across timespans. Bad-ticker = HTTP 200 + `resultsCount: 0` (NOT 4xx). Volume `v` is fractional `number`. Status: `"DELAYED"` tier (~24h stale on hour bars at probe time — fine for swing/long horizon).
+- **Q-EXTENDED-HOURS probe and lock.** Massive `&extended_hours=false` param probed and confirmed **silently ignored** (HTTP 200, identical 128 bars). Client-side filter is the only working path. Locked overlap-tolerant rule: ET hour ∈ [9, 15] inclusive (preserves 9:00 ET bar's 30-min regular-session window = opening auction). Filter applied only on `timespan === "hour"`.
+- **lib/fmp module shipped at `5a3e979`.** `lib/fmp/key-metrics.ts` + `lib/fmp/types.ts` (10 high-confidence canonical fields: symbol, date, calendarYear, period, marketCap, peRatio, pbRatio, pegRatio, debtToEquity, currentRatio). Single function `fetchKeyMetrics(ticker, { period, limit })`. Mirrors `validate-ticker.ts` inline pattern: env-key guard → inline fetch → `cache: "no-store"` → manual error throw → discriminated `{ ok }` return. Ambiguous fields (roe vs returnOnEquity, FCF yield variants, EV/EBITDA variants) deferred until live probe locks them post Q-FMP-KEY rotation.
+- **lib/massive aggregates shipped at `8cc5ed6`.** `lib/massive/aggregates.ts` (71 lines, under 80 sanity threshold) + `lib/massive/types.ts` + `lib/massive/symbols.ts`. `fetchAggregates({ ticker, timeframeId, refDate })` maps locked timeframes (5D/1M/3M/1Y/5Y) → (multiplier=1, timespan, from, to) → calls Massive endpoint → filters hour-timespan to regular session via `Intl.DateTimeFormat` (timeZone: America/New_York, hourCycle: h23, DST-aware, no new deps). `normalizeForMassive` lifted from `validate-ticker.ts` (where it was private) to shared `lib/massive/symbols.ts`; both files import from there in same commit (pattern-dependency-in-scope).
+- **Smoke probes via tsx.** NVDA 5D = **35 bars** (matches spec ~35); NVDA 1Y = **251 bars** (spec ~250); BRK-B 1M = 21 bars (URL with `BRK.B` accepted post-normalization); ET hours present in 5D output = `[09, 10, 11, 12, 13, 14, 15]` (exact filter match); validate-ticker AAPL still resolves to "Apple Inc." / XNAS post-helper-lift.
+- **PR #7 squash-merged at `00bb968`.** THS-DS-1 design system v2.0 re-anchor lands on main. Linear THS-16 manually moved to Done via Linear MCP (GitHub auto-integration didn't fire — manual move OK per protocol).
+- **PR #8 squash-merged at `c72c6f2`.** Two single-purpose commits (`5a3e979` lib/fmp + `8cc5ed6` lib/massive) collapsed into one squash. Branch `ths-6-prep-data-clients` deleted on origin. Linear THS-6 stays Todo with comment noting lib infra shipped (`64d03e67…`).
+- **Visual spot-check.** All 16 v2.0 hexes confirmed in `app/globals.css` (lowercase form: `#0b0c0f`, `#06070a`, `#15171c`, `#1b1e25`, `#22262e`, `#232730`, `#2a2f38`, `#1f2229`, `#ecedef`, `#cfd3da`, `#7a818d`, `#30a46c`, `#f5a524`, `#e5484d`, `#8b5cf6`, `#fcd34d`, `#4d5bff`, `#6573ff`) + 3 rgba divider tiers (0.06 / 0.08 / 0.12). Pre vs post `/login.png` (existing screenshots in `docs/design/screenshots/`): subtle cool shift on card surface, accent button + fonts identical, layout intact. Authed surfaces (/dashboard, /watchlist, /tokens, /memos) require Terry preview — redirect to /login without auth.
+
+**Decisions made (durable — codified in HANDOFF):**
+- **Codex never gates merge.** Codex is async post-merge audit. Human approval is the only merge gate. Comments addressed in follow-up tickets when convenient. Stronger codification of the 2026-04-29 "advisory not blocking" rule.
+- **Files-travel-together scope clarification.** Rule applies to **token migrations only**. Pure infrastructure (API clients, helpers, types) ships on its own cadence. Prevents future drift to "everything dependent must travel together."
+- **External-API alignment: prefer overlap-tolerant filters.** When an API returns data on different alignment than your filter spec assumes, prefer overlap-tolerant over strict. Locked via Q-EXTENDED-HOURS: Massive hour-timespan filter is ET hour ∈ [9, 15] inclusive (overlap-tolerant) because clock-aligned top-of-hour bars don't match session boundaries; losing partial-window contamination is a smaller error than losing the whole window.
+- **Formatter output on touched files is in-scope.** `prettier --write` (or any configured formatter) on files already in scope of a commit is in-scope by default. Don't force-push to revert cosmetic-only reformats. Cosmetic reformats on in-scope files = ship + note in PR body. Cosmetic reformats on out-of-scope files = revert; that's actual scope creep.
+
+**Verification:**
+- `tsc --noEmit` (project-wide) clean across all touched files.
+- `eslint` clean across `lib/massive/*.ts` + `lib/fmp/*.ts`.
+- `prettier --check` clean post auto-format.
+- File sanity thresholds met: `lib/massive/aggregates.ts` = 71 lines (≤80 spec); `lib/fmp/key-metrics.ts` = 39 lines.
+- Smoke probe expectations matched exactly (35/251/21 bars, ET hours [9-15]).
+- PR #8 CI: Vercel pass.
+
+**Carrying forward — THS-6 next session:**
+- **Q-FMP-KEY (Q1) is the only remaining external-API gate.** Terry rotates FMP key into `.env.local` → file-state-wins verify → first live probe to confirm field names (esp. roe vs returnOnEquity, FCF yield variants) → extend `KeyMetric` type if needed.
+- Once Q1 clears, THS-6 page work resumes: `/tickers/[symbol]` server component scaffold, Recharts OHLCV chart consuming `fetchAggregates`, fundamentals panel consuming `fetchKeyMetrics`, header + tab shell + action bar.
+- 4 UX Q-locks still pending: "15m delayed" label scope, Insider tab deferral, empty tab treatment, Active Triggers panel pre-THS-8.
+- Codex review on PR #7 / #8 stays deferred (per durable rule). Address only if Terry surfaces specific items.
+
+**Key gotchas surfaced this session:**
+- `FMP_API_KEY` empty in `.env.local` (extraction returned length 0) — module compiles but throws at runtime until rotation lands.
+- `set -a; source .env.local; set +a` chokes on line 27 (`command not found: Terry` — multi-word `EDGAR_USER_AGENT` value not quoted). Per-key extraction (`grep ^FMP_API_KEY .env.local | cut -d= -f2-`) works fine.
+- Linear GitHub integration did NOT auto-transition THS-16 from In Review → Done after PR #7 merge. Manual move via Linear MCP `save_issue { state: "Done" }` worked. Worth a check on every PR-merge → Linear-state expectation.
+- Massive returns `status: "DELAYED"` (not "OK") on aggregates — tier-tier dependent. Latest hour bar ~24h stale at probe time. Fine for Phase 1 swing/long horizon; Phase 2 real-time would need tier upgrade.
 
 ### Session 2026-04-30 (Claude Code #227_04.29.2026 — THS-5 ship: live Massive validation + Q-STORAGE U + Q-NORMALIZATION B + 2 new durable rules)
 

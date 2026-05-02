@@ -1,16 +1,19 @@
 export type KeyMetric = {
+  // ─── shared identity (read from /stable/key-metrics) ───
   symbol: string;
   date: string;
-  calendarYear: string;
+  fiscalYear: string;
   period: string;
-  marketCap: number | null;
-  peRatio: number | null;
-  pbRatio: number | null;
-  pegRatio: number | null;
-  debtToEquity: number | null;
-  currentRatio: number | null;
-};
+  reportedCurrency: string;
 
-export type FetchKeyMetricsResult =
-  | { ok: true; periods: KeyMetric[] }
-  | { ok: false; reason: "no-data" };
+  // ─── from /stable/key-metrics ───
+  marketCap: number | null;
+  currentRatio: number | null;
+  evToEBITDA: number | null;
+
+  // ─── from /stable/ratios ───
+  priceToEarningsRatio: number | null;
+  priceToBookRatio: number | null;
+  priceToEarningsGrowthRatio: number | null;
+  debtToEquityRatio: number | null;
+};

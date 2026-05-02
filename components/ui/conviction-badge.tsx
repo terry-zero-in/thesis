@@ -5,15 +5,15 @@ function tone(conviction: number) {
   return "bg-surface-2 text-text-3";
 }
 
-export function ConvictionBadge({ value }: { value: number | null }) {
-  if (value == null) {
+export function ConvictionBadge({ score }: { score: number | null }) {
+  if (score == null) {
     return <span className="text-text-3 tnum">—</span>;
   }
   return (
     <span
-      className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium tnum ${tone(value)}`}
+      className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium tnum ${tone(score)}`}
     >
-      {value}/10
+      {score}/10
     </span>
   );
 }

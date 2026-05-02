@@ -35,7 +35,7 @@ import { formatPrice, formatRelative } from "@/lib/watchlist/format";
 import type { MemoStatus, WatchlistRow } from "@/lib/watchlist/types";
 
 import { AddTickerDialog } from "./add-ticker-dialog";
-import { ConvictionBadge } from "./conviction-badge";
+import { ConvictionBadge } from "@/components/ui/conviction-badge";
 import { MemoStatusIcon } from "./memo-status-icon";
 
 type Filters = {
@@ -56,9 +56,7 @@ const DEFAULT_FILTERS: Filters = {
 
 export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "symbol", desc: false },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: "symbol", desc: false }]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [, startTransition] = useTransition();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -139,9 +137,7 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
         accessorKey: "symbol",
         header: "Symbol",
         cell: ({ row }) => (
-          <span className="font-mono text-sm tracking-wide tnum">
-            {row.original.symbol}
-          </span>
+          <span className="font-mono text-sm tracking-wide tnum">{row.original.symbol}</span>
         ),
       },
       {
@@ -156,9 +152,7 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
       {
         id: "price",
         header: () => <span className="text-right block">Price</span>,
-        cell: () => (
-          <span className="block text-right font-mono tnum text-text-3">—</span>
-        ),
+        cell: () => <span className="block text-right font-mono tnum text-text-3">—</span>,
       },
       {
         accessorKey: "targetPrice",
@@ -174,7 +168,7 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
         header: () => <span className="text-center block">Conviction</span>,
         cell: ({ row }) => (
           <div className="text-center">
-            <ConvictionBadge value={row.original.conviction} />
+            <ConvictionBadge score={row.original.conviction} />
           </div>
         ),
       },
@@ -240,9 +234,7 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
             ref={searchRef}
             placeholder="Search symbols…"
             value={filters.search}
-            onChange={(e) =>
-              setFilters((f) => ({ ...f, search: e.target.value }))
-            }
+            onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
             className="h-9"
             aria-label="Search symbols"
           />
@@ -351,7 +343,10 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
             <TableBody>
               {isFiltered ? (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center text-sm text-text-3">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-sm text-text-3"
+                  >
                     No matches.
                   </TableCell>
                 </TableRow>
@@ -379,16 +374,12 @@ export function WatchlistTable({ rows }: { rows: WatchlistRow[] }) {
   );
 }
 
-function matchMemo(
-  status: MemoStatus,
-  filter: Filters["memoStatus"],
-): boolean {
+function matchMemo(status: MemoStatus, filter: Filters["memoStatus"]): boolean {
   if (filter === "all") return true;
   if (filter === "none") return status === null;
   if (filter === "has")
     return status !== null && status !== "draft" && status !== "pending_approval";
-  if (filter === "pending")
-    return status === "draft" || status === "pending_approval";
+  if (filter === "pending") return status === "draft" || status === "pending_approval";
   return true;
 }
 

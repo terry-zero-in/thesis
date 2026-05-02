@@ -13,7 +13,7 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 | THS-3 | Magic-link auth + protected middleware + sign-in | ✅ Done 2026-04-28 | [#3](https://github.com/terry-zero-in/thesis/pull/3) | Squash-merged at `fe4cdf3`. Two Codex review cycles: P2 host-protocol fix + P1 disable-auto-signup, both landed before merge. Live at https://thesis-nu.vercel.app. |
 | THS-4 | Sidebar + topnav + ⌘K palette | ✅ Done 2026-04-28 | [#4](https://github.com/terry-zero-in/thesis/pull/4) | Squash-merged at `2f5aa9e`. App shell `(app)/layout.tsx` + 10 sidebar routes + ⌘K palette + EmptyPanel. Two primitive-layer P1 fixes: `<Command>` cmdk root (`components/ui/command.tsx:63`) + selection-highlight styling (`bg-surface-hover` Tailwind utility, line 159). 6/6 functional ⌘K test passed before merge. **Perplexity Checkpoint #1 ✅ CLEARED 2026-04-29.** |
 | THS-5 | Watchlist CRUD | ✅ Done 2026-04-30 | [#6](https://github.com/terry-zero-in/thesis/pull/6) | Squash-merged at `9a84e42`. Stub (`27081b5`) → live Massive validation (`442258d`) → Q-STORAGE U intent comment (`f34a545`) → throw-catch hardening (`a3a703b`). Q-NORMALIZATION B + Q-STORAGE U + Q5 isolate locked. FMP convention verified hyphen. Codex deferrals → THS-15 (P1) + THS-7 AC (P2). |
-| THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | — | Next ticket. Lib infrastructure prep shipped via [#8](https://github.com/terry-zero-in/thesis/pull/8) at `c72c6f2` 2026-05-01 (`lib/fmp/` + `lib/massive/aggregates.ts` + helper lift to `lib/massive/symbols.ts`). 4 of 8 Q-locks now LOCKED (Q-MASSIVE-AGGS, Q-CHART-TIMEFRAMES, Q-EXTENDED-HOURS, files-travel-together scope). Q-FMP-KEY pending Terry rotation. Page work resumes when rotation lands. |
+| THS-6 | Ticker detail page (chart + fundamentals) | ⬜ Todo | [#9](https://github.com/terry-zero-in/thesis/pull/9) OPEN | Lib infrastructure prep shipped via [#8](https://github.com/terry-zero-in/thesis/pull/8) at `c72c6f2` 2026-05-01. **Q-FMP-KEY cleared S237 2026-05-02 → /api/v3/key-metrics deprecated → rebuilt on PR #9 OPEN at `d88f94e` (ths-6-fmp-stable-rebuild)** — `getKeyMetrics` against `/stable/`, sibling error class hierarchy, 3 helper-probes PASS, 4/10 watchlist tickers (NET/BRK-B/QQQ/MDB) hit `FMPSymbolNotCoveredError`. NET coverage decision A LOCKED (accept gap; Phase 1 acceptance criterion modified). 13 of 13 THS-6 spec items LOCKED in HANDOFF carry-forward (tab structure, Latest research block, design principles, etc.). Page work resumes after PR #9 merge + BRK-B form gap settled + scaffold proposal cycle opens. |
 | THS-16 | THS-DS-1: Re-anchor design system to Basis canon | ✅ Done 2026-05-01 | [#7](https://github.com/terry-zero-in/thesis/pull/7) | Squash-merged at `00bb968`. AI Thesis design tokens, semantic colors, intra-card divider system, and card/chart specs re-anchored to match Basis canon verbatim. v1.1 → v2.0 migration: bg/sidebar/surface hex shifts, text-2 brighter (Linear bright-in-dark), success/warning/danger more saturated, info hue shift blue→violet (#8B5CF6), `--score-amber` new. Cypher Indigo `#4D5BFF` UNCHANGED. Files-travel-together rule locked. Linear THS-16 manually moved to Done (GitHub auto-integration didn't fire). |
 | THS-7 | Single-agent research (Company Research) | ⬜ Todo | — | **Perplexity Checkpoint #2: first end-to-end memo.** AC appended 2026-04-30: `/watchlist` "Last Research" must filter `completed_at IS NOT NULL` and order by `completed_at DESC` (not `created_at`). |
 | THS-8 | Trigger definitions data model only | ⬜ Todo | — | |
@@ -46,6 +46,54 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 ---
 
 ## Sessions
+
+### Session 2026-05-02 (Claude Code #237_05.02.2026 — S237 — FMP /stable/ rebuild ship + THS-6 spec lock + NET decision A)
+
+**Focus:** Clear Q-FMP-KEY gate (key rotation + live probe), rebuild lib/fmp against /stable/ surface (post-Aug-2025 endpoint deprecation), lock THS-6 spec carry-forward, resolve NET coverage gap.
+
+**Done:**
+- **Q-FMP-KEY (Q1) cleared at file layer.** Terry rotated key to `.env.local:24`. Sed prefix-match replace, no key echo, mtime + length verified (33 chars on disk).
+- **Live FMP probe surfaced /api/v3/key-metrics deprecation.** HTTP 403 + `Legacy Endpoint` body — pre-2025-08-31 subscriptions only. Pivot to `/stable/` surface locked.
+- **2 endpoints probed live (NVDA annual limit=1).** `/stable/key-metrics` 47 fields, `/stable/ratios` 64 fields. Surfaced 4 silent field renames vs documented (`calendarYear→fiscalYear`, `peRatio→priceToEarningsRatio`, `pbRatio→priceToBookRatio`, `pegRatio→priceToEarningsGrowthRatio`, `debtToEquity→debtToEquityRatio`), `evToEBITDA` capitalization matching no documented variant, `period` value-format flip from request-mirror to fiscal-token (`"FY"`).
+- **lib/fmp rebuilt + PR #9 OPEN at `d88f94e`.** Branch `ths-6-fmp-stable-rebuild`. `getKeyMetrics(ticker, period?, limit?)` parallel-fetch via `Promise.all`, length-zip merge with `FMPMergeError` on mismatch. Source-tagged `KeyMetric` type. Sibling error class hierarchy: `FMPApiError` parent, `FMPPaywallError` + `FMPSymbolNotCoveredError` siblings (402 split via body regex `/value set for ['"]symbol['"]|symbol.*not available under/i`), `FMPDeprecatedEndpointError` defense-in-depth, `FMPMergeError`. Rename `fetchKeyMetrics` → `getKeyMetrics`. Drop `FetchKeyMetricsResult` discriminated union (throw on failure, `[]` on no-data).
+- **3 helper-based verifications PASS.** NVDA limit=1 (12-field shape with all populated, no nulls), NVDA limit=5 (5 periods FY-desc 2026→2022, P/E compression + D/E paydown trace looks legit), ZZZZZZ (throws `FMPSymbolNotCoveredError`, instanceof chain confirmed correct: subclass true, parent `FMPApiError` true, sibling `FMPPaywallError` false).
+- **10-ticker Phase 1 watchlist coverage probe** (free tier, hyphen-form per Q-STORAGE U, limit=5). NVDA / MSFT / INTC / PYPL / VZ = OK 5 periods aligned · SPY = OK 0 periods (ETF, hits `[]` no-data return) · NET / BRK-B / QQQ / MDB = `FMPSymbolNotCoveredError`.
+- **HANDOFF spec lock committed direct-to-main at `7f35d25`.** THS-6 carry-forward updated with 13 locked items (tab structure Overview/Chart/Fundamentals/Research History/Thesis; Bulls/Bears NOT a tab; What's Happening NOT rendered; Latest research block design; conviction badge component prerequisite; design principles (a)-(d) durable). Separate single-purpose doc commit per doc-code split rule.
+- **NET coverage decision A LOCKED.** Phase 1 acceptance criterion modified to "Ticker detail loads real data — Massive chart + FMP fundamentals where covered." Fundamentals tab needs graceful "not available on current data plan" UI surface for `FMPSymbolNotCoveredError` (NET / QQQ / MDB; BRK-B pending probe).
+
+**Decisions made (durable):**
+- **Probe-before-typing rule** (NEW memory file `feedback_probe_before_typing.md`). When typing a third-party API client response shape, run a live probe FIRST. Documented field names lie. Cross-project. Born from this session's 4 silent renames + capitalization gotcha + period value-format flip + bad-ticker 402+symbol-language behavior — all undocumented.
+- **Sibling error class hierarchy for distinct-fault classification.** `FMPSymbolNotCoveredError` sibling of `FMPPaywallError`, NOT subclass — preserves discrimination cleanly. Caller checking for `FMPPaywallError` won't accidentally catch symbol-not-covered.
+- **`/stable/` = FMP's post-Aug-2025 replacement for `/api/v3/`.** Symbol moves from path segment to query param. Auth pattern unchanged. Documented field names disagree with actual response in 5+ places.
+- **NET decision A:** accept FMP free-tier gap; modify Phase 1 acceptance criterion. Phase 1 single-user, US large-caps focus; coverage gaps acceptable. Fundamentals tab surfaces graceful no-data UI per ticker.
+- **THS-6 page scaffold structurally locked but NOT approved for implementation.** Tab structure + block layouts + design principles all recorded; scaffold proposal cycle (creative-build hard-gate) consumes them as input. NOT pre-approved scope.
+
+**Verification:**
+- `pnpm tsc --noEmit` clean throughout.
+- `pnpm exec eslint lib/fmp/` clean.
+- 3 helper-based probes via `node --experimental-transform-types` PASS (probe script written + deleted, no stray scripts/ files).
+- Coverage probe across 10 Phase 1 watchlist tickers logged in PR #9 body + HANDOFF carry-forward item 1.
+- HANDOFF main commit verified via post-push `git rev-parse origin/main` = `7f35d2584ef61fd592afd830e07ac5acfd321b18`.
+- PR #9 verified OPEN via `gh pr view --json` post-create.
+
+**Carrying forward — THS-6 next:**
+- PR #9 awaits Terry's merge call (Codex NOT engaged per rule).
+- BRK-B single-curl probe (`?symbol=BRK.B` on both endpoints) — settles whether transform layer needed or BRK.B genuinely uncovered.
+- HANDOFF metadata staleness (body references to old SHAs) — single-purpose commit (queued cycle item 5).
+- THS-6 scaffold creative-build proposal cycle (sections 1-6) — gated on above. Scaffold scope must include graceful UI for `FMPSymbolNotCoveredError` per NET decision A.
+
+**Key gotchas surfaced this session:**
+- `/api/v3/key-metrics/{ticker}` deprecated by FMP 2025-08-31. Any post-cutover key returns 403 + `Legacy Endpoint` body. Replacement is `/stable/key-metrics?symbol=`.
+- `/stable/ratios` and `/stable/key-metrics` are distinct endpoints; original v3 `KeyMetric` typed-fields split across both. Double-call required for full coverage. Free tier 250/day has 6× headroom for single-user Phase 1.
+- FMP free tier `FMPSymbolNotCoveredError` (402 + "Special Endpoint : This value set for 'symbol' is not available...") is NOT distinguished by HTTP status from real endpoint paywall. Body regex split required.
+- ETF behavior asymmetric on free tier: SPY returns 200+[], QQQ returns 402+symbol-not-covered. Same asset class, different FMP coverage. Worth surfacing if Phase 1 ETF coverage matters.
+- Node `--experimental-transform-types` works for class syntax + parameter properties; `pnpm dlx tsx` outside the project tree drops to CJS shape (probe failed with `does not provide an export named X`). `cd` into project + relative `.ts` import path works.
+- `package.json` lacks `"type": "module"`; Node prints `MODULE_TYPELESS_PACKAGE_JSON` warning when probes import `lib/fmp/key-metrics.ts` directly. Does not affect Next.js builds. Backlogged.
+
+**Memory rules added:**
+- `feedback_probe_before_typing.md` (cross-project): live probe before typing any third-party API client response shape. Documented names lie, response shapes are truth.
+
+---
 
 ### Session 2026-05-01 (Claude Code #234_05.01.2026 — THS-DS-1 + THS-6 prep merged: design system v2.0 live, lib/fmp + lib/massive data clients shipped, 4 new durable rules)
 

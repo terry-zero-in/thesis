@@ -1,3 +1,5 @@
+import { normalizeForMassive } from "./symbols";
+
 export type ValidatedTicker = {
   valid: boolean;
   name?: string;
@@ -8,12 +10,6 @@ export type ValidatedTicker = {
 };
 
 const SYMBOL_RE = /^[A-Z][A-Z0-9.\-]{0,9}$/;
-
-// Massive stores class shares as `{root}.{suffix}` (BRK.B, BF.B, MOG.A).
-// Section K seeds use hyphen-form (BRK-B). Normalize last `-X+` → `.X+`.
-function normalizeForMassive(upper: string): string {
-  return upper.replace(/-([A-Z]+)$/, ".$1");
-}
 
 export async function validateTicker(symbol: string): Promise<ValidatedTicker> {
   const upper = symbol.trim().toUpperCase();
@@ -26,19 +22,14 @@ export async function validateTicker(symbol: string): Promise<ValidatedTicker> {
     throw new Error("MASSIVE_API_KEY is not set");
   }
 
-  const res = await fetch(
-    `https://api.massive.com/v3/reference/tickers/${normalized}`,
-    {
-      headers: { Authorization: `Bearer ${apiKey}` },
-      cache: "no-store",
-    },
-  );
+  const res = await fetch(`https://api.massive.com/v3/reference/tickers/${normalized}`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+    cache: "no-store",
+  });
 
   if (res.status === 404) return { valid: false };
   if (!res.ok) {
-    throw new Error(
-      `Massive API error ${res.status} for ${normalized}`,
-    );
+    throw new Error(`Massive API error ${res.status} for ${normalized}`);
   }
 
   const data = (await res.json()) as {

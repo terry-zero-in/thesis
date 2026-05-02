@@ -209,6 +209,19 @@ Symbol uppercased pre-fetch. `404 → { valid: false }`. `results.active === fal
 
 Generalized rule: when boundaries are symmetric (one transform needed either way), pick the form that matches user expectation + UI convention. Storage form is for humans first, machines second.
 
+### Token source-of-truth files travel together (LOCKED 2026-05-01 — THS-DS-1, Linear THS-16)
+
+Whenever `docs/design/thesis-design-system.css` changes, every served-token surface re-anchors in the same PR:
+
+- `app/globals.css` (`@theme` block + `:root` shadcn bridge)
+- `docs/design/DESIGN_SPEC.md` `@theme` block
+- Any `tailwind.config.*` token references
+- Any page that hardcodes hex for display (e.g. `app/(app)/tokens/page.tsx` swatches)
+
+No staggered token migrations across PRs. Hex-leak grep across `app/`, `components/`, `lib/` must return zero before PR opens. This rule applies to every future design-system change, not just THS-DS-1.
+
+Codified: 2026-05-01 in THS-DS-1 closeout (Linear THS-16).
+
 ### Q5 isolate — LOCKED 2026-04-30 (DESIGN_SPEC §5.5 read confirmed)
 
 Watchlist data layer (`lib/watchlist/queries.ts` + `actions.ts`) stays separate from Dashboard `WatchlistSummary` (DESIGN_SPEC §5.5). §5.5 read confirmed: pure visual/layout spec for a dashboard widget — does NOT define a shared types contract, shared query helpers, or shared normalization. The §5.5 widget and the §G.2 standalone `/watchlist` page have different column sets (§5.5 = trigger proximity / sparkline / reco / conviction-mini / age; §G.2 = symbol+name / conviction / target / sector / memo status / last research). YAGNI on shared abstractions until 2+ concrete consumers materialize. Share schema only (`watchlist_tickers` + joins).
@@ -265,13 +278,15 @@ Already documented in §2 of SESSION-STARTUP SANITY CHECKS. Mirrored from `cc342
 
 `docs/design/DESIGN_SPEC.md` is the source of truth. Read before any UI work.
 
-**Tokens (LOCKED):**
-- bg `#0A0B0E` (canvas + sidebar merged into single plane)
-- surface `#14161B` · surface-2 `#1A1D24` · surface-hover `#1F232B`
-- border `#232730` · border-subtle `#1A1D24`
-- text-1 `#F0F1F3` · text-2 `#9298A3` · text-3 `#5F6571`
-- accent `#4D5BFF` · accent-soft `rgba(77,91,255,.12)` · accent-hover `#6573FF`
-- success `#4FB87A` · warning `#DDA84F` · danger `#E26B6B` · info `#5B8FFF` (each with `*-soft` 12% alpha)
+**Tokens (LOCKED — v2.0, Basis canon re-anchor 2026-05-01, THS-DS-1):**
+- bg `#0B0C0F` (page canvas, topbar, table headers) · sidebar `#06070A` (distinct from canvas — Basis S61 lock)
+- surface `#15171C` · surface-2 `#1B1E25` · surface-elevated `#22262E` (overlays/modals/tooltips/dropdowns) · surface-hover `#232730`
+- border `#2A2F38` · border-subtle `#1F2229`
+- intra-card divider system (three-tier): border-06 `rgba(255,255,255,0.06)` · border-08 `rgba(255,255,255,0.08)` · border-12 `rgba(255,255,255,0.12)`
+- text-1 `#ECEDEF` · text-2 `#CFD3DA` (BRIGHTER — Linear bright-in-dark) · text-3 `#7A818D`
+- accent `#4D5BFF` · accent-soft `rgba(77,91,255,.10)` · accent-hover `#6573FF` (Cypher Indigo — UNCHANGED)
+- success `#30A46C` · warning `#F5A524` · danger `#E5484D` · info `#8B5CF6` (HUE SHIFT: blue → violet) — each with `*-soft` 12% alpha (Q13 GOLD STANDARD saturated palette)
+- score-amber `#FCD34D` (score numbers <50, distinct from `--warning` to avoid same-row sync)
 
 **Brand:** "AI Thesis" wordmark + "Investment OS" product label.
 **Macro strip (curated 8):** SPX · NDX · RUT · VIX · US10Y · DXY · WTI · GOLD.

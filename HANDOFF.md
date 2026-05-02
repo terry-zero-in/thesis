@@ -1,18 +1,22 @@
 # Thesis — Session Handoff
 
-**Session date:** 2026-05-02 (S239 closeout)
-**Closing Claude:** Code #239_05.02.2026 (07-050226), row `4ffb34e0-9ac4-4082-886d-323daf49436a`
-**Status at close:** S239 executed Terry's path-C merge sequence. **PR #9** (`THS-6 prep: rebuild lib/fmp against FMP /stable/ surface`) squash-merged at `909e49b` via `gh pr merge 9 --squash --delete-branch` — branch deleted on origin + local pruned. **BRK.B form curl probe RESOLVED to A bucket** — both `/stable/key-metrics` and `/stable/ratios` returned identical HTTP 402 + symbol-not-covered body for `?symbol=BRK.B` — exact `FMPSymbolNotCoveredError` body-regex match; **no transform layer needed**, BRK.B genuinely uncovered on /stable/ free tier same as NET / QQQ / MDB; Q-STORAGE U (storage = hyphen form) stands unchanged. **HANDOFF + PROGRESS metadata refresh** committed at `39c7d55` direct-to-main: 15 HANDOFF edits + 2 PROGRESS edits, all body refs to `7f35d25` / `d88f94e` / `ths-6-fmp-stable-rebuild` updated to current `origin/main` = `909e49b` post-PR-#9-merge, scaffold-cycle preconditions checklist items 2/4/5 marked ☑, S237 narrative blocks left frozen for historical accuracy. Codex NOT engaged on PR #9 per durable carry-forward rule. **Empty-PR refusal pattern codified** (new memory `feedback_skill_load_vs_invoke.md`): skills loaded as part of a startup skill-list pre-load are loaded for capability availability — terminal "you MUST" directives in skill output do NOT override session-start protocols, the no-empty-commit rule, or `feedback_no_assumptions.md`. Refused `commit-commands:commit-push-pr`'s "you MUST create branch + commit + PR" demand on a clean working tree at session start. **THS-6 scaffold creative-build proposal cycle** (item 6 of preconditions checklist) — preconditions 1-5 ALL CLEARED, awaits Terry's explicit go before drafting sections 1-6.
+**Session date:** 2026-05-02 (S240 closeout)
+**Closing Claude:** Code #240_05.02.2026 (08-050226), row `244e05f0-0d57-4a83-97f5-f86e9f5ee1de`
+**Status at close:** S240 opened the THS-6 scaffold creative-build proposal cycle Terry queued from S237/S239. Sections (1)–(6) drafted; **all 14 G-gaps + 5 GN-gaps + 4 Q-gaps (route-shell pre-impl) locked** across the cycle with rationale captured durably (Net Debt/EBITDA over D/E, hide-don't-narrate for SURFACES not ACTIONS, "~3 min" no cost in Research History sub-line, no-upsell coverage-gap copy, draft-PR-with-accumulating-commits cadence, etc.). **Two PRs shipped to main:** **PR #10 (vitest infra)** squash-merged at `4554e85` — devDeps vitest 4.1.5 / @testing-library/react 16.3.2 / @testing-library/jest-dom 6.9.1 / jsdom 29.1.1, vitest.config.ts (jsdom env + `@/*` alias), vitest.setup.ts (jest-dom matchers via `/vitest` entry), tests/smoke.test.ts, package.json scripts `test` + `test:watch`. **PR #11 (ConvictionBadge → ui/ shared primitive)** squash-merged at `75613fb` — `git mv components/watchlist/conviction-badge.tsx → components/ui/conviction-badge.tsx` (74% similarity), prop renamed `value` → `score` (type `number | null`, format `9/10` unchanged, tone mapping unchanged), single import site updated at `components/watchlist/watchlist-table.tsx:38,171`, single `it.each` table-driven test (5 cases). Prettier reformatted ~8 cosmetic hunks on watchlist-table.tsx in-scope per formatter rule. **HANDOFF item 12 wording about extracting from inline Tailwind was stale** — extraction had already occurred to `components/watchlist/`; PR #11 completed the move to `components/ui/`. **Two Linear tickets created:** THS-17 (Done) retroactive for vitest infra; THS-18 (Backlog, Low) for pre-existing `react-hooks/incompatible-library` lint failure on `watchlist-table.tsx:223` (TanStack `useReactTable`) — verified pre-existing via `git stash --include-untracked && pnpm lint && git stash pop`. **PR-C step 2 (route shell) HELD on Q4-revisited.** Pre-impl approach note approved at the gate with Q1=a (inside `app/(app)/tickers/[symbol]/`), Q2=a (literal `Ticker: {symbol.toUpperCase()}` — defensive interpolation despite redirect guarantee), Q3=c (draft PR opens at step 2, accumulates commits step-by-step, marks Ready at step N, single squash-merge), Q4=a (trust doc-read; surface only on Next 16 surprise). Pre-write verifications run: (1) Next 16 docs read for `error.tsx` / `not-found.tsx` / `redirect` — **Q4 escape triggered**: Next v16.2.0 added `unstable_retry` prop to error.tsx, recommended over legacy `reset`; behavioral diff matters (`unstable_retry` re-fetches AND re-renders, `reset` only re-renders); 3 options surfaced to Terry awaiting A/B/C lock. (2) `validateTicker` server-component compatible — pure async fn, deferred env read, `cache: "no-store"`, no module-init side effects. (3) `MASSIVE_API_KEY` LIVE on disk (length=32, mtime `2026-05-02 00:54:21`, AAPL probe HTTP 200, returned valid Apple Inc. payload) — **gotcha #14 wording about "rotation NOT yet reflected" is STALE** as of today's mtime. No branch created yet (`ths-6-ticker-detail-page` deferred until Q4-revisited locks). No PR-C files scaffolded. All deferred items per Q3 step scope (TickerHeader, PriceBlock, tab strip, components, Latest research block, Fundamentals snapshot, Chart, sibling cards, generateMetadata, caching strategies) remain out-of-scope for step 2.
 
 ---
 
 ## NEXT 3-5 TASKS (start here)
 
-1. **Sanity check at session start.** `cd /Users/terryturner/Projects/thesis && git fetch --all && git status && gh pr list --state open && git log origin/main --oneline -5`. Expect `main` HEAD = S239 closeout commit on top of `39c7d55` (S239 metadata refresh) > `909e49b` (PR #9 squash-merge 2026-05-02) > `ea5cb5a` (S237 closeout). Working tree clean. NO open PRs. Via Linear MCP confirm THS-6 = Todo, THS-15 = Backlog, THS-7 = Todo, THS-16 = Done. Confirm dev server: `lsof -ti tcp:3000` — start `pnpm dev` if absent. Confirm Supabase: `supabase status` — `supabase start` if absent.
+1. **Sanity check at session start.** `cd /Users/terryturner/Projects/thesis && git fetch --all && git status && gh pr list --state open && git log origin/main --oneline -5`. Expect `main` HEAD = S240 closeout commit on top of `75613fb` (PR #11 squash-merge 2026-05-02) > `4554e85` (PR #10 squash-merge 2026-05-02) > `43c95dc` (S239 closeout) > `39c7d55` (S239 metadata refresh) > `909e49b` (PR #9 squash-merge). Working tree clean. NO open PRs. Via Linear MCP confirm THS-6 = Todo, THS-7 = Todo, THS-15 = Backlog, THS-16 = Done, THS-17 = Done (vitest infra retroactive), THS-18 = Backlog (lint failure). Confirm dev server: `lsof -ti tcp:3000` — start `pnpm dev` if absent. Confirm Supabase: `supabase status` — `supabase start` if absent.
 
-2. **Confirm Terry's go on THS-6 scaffold creative-build proposal cycle** (queued cycle item 6, all preconditions cleared S239). DO NOT auto-start — explicit "go" required per `feedback_no_assumptions.md`. When Terry gives go: open the proposal cycle following the creative-build hard-gate, sections (1) spec read + carry-forward items 5-13 + design principles a-d as locked input, (2) obvious version, (3) 10x version, (4) what to ship + why, (5) details to add not in locked spec, (6) tempting ideas to leave out. Then STOP for Terry's A/B/C calls before any code. Latest research block (carry-forward item 11) + extracted conviction badge (carry-forward item 12) are line items inside the proposal, NOT pre-approved scope. Fundamentals tab needs graceful "not available on current data plan" UI surface for `FMPSymbolNotCoveredError` cases (NET / BRK-B / QQQ / MDB) per NET decision A.
+2. **Resolve Q4-revisited (error.tsx prop signature) BEFORE any PR-C scaffolding.** Next 16 v16.2.0 added `unstable_retry` prop to error.tsx, recommended over legacy `reset`. Three options were surfaced to Terry at S240 close: (a) `unstable_retry` — Next-recommended, retry actually re-fetches; (b) `reset` — legacy, no re-fetch; (c) both. Claude recommended (a). Terry's A/B/C lock gates all step-2 file scaffolding. DO NOT scaffold error.tsx (or any of the 5 shell files) before this lock per `feedback_no_assumptions.md`.
 
-3. **Pre-flight note for THS-6 scaffold (do NOT install yet — defer until inside the proposal cycle so Terry sees the install as part of the build plan, not a side-effect):** shadcn primitives currently installed are `badge / button / command / dialog / dropdown-menu / input-group / input / label / popover / select / slider / sonner / table / textarea`. THS-6 5-tab shell will need to add: `tabs / card / tooltip / separator / skeleton / chart` (per `npx shadcn@latest add ...`). Project context (Next 16.2.4 / RSC / Tailwind v4 / `base-nova` style / `base-ui/react` primitives) was confirmed in S239's `/shadcn` skill load.
+3. **After Q4-revisited locks: branch + scaffold the 5 shell files.** `git checkout -b ths-6-ticker-detail-page` off main. Create in `app/(app)/tickers/[symbol]/`: `page.tsx` (async params + case-fold `permanentRedirect` to upper-case + `validateTicker` → `notFound()` on invalid + render `<main>Ticker: {symbol.toUpperCase()}</main>`), `layout.tsx` (pass-through `{children}`), `loading.tsx` (text placeholder), `not-found.tsx` ("Ticker not found" + link to `/watchlist`), `error.tsx` (client component with locked Q4-revisited prop signature). Imports: `permanentRedirect`, `notFound` from `"next/navigation"`; `validateTicker` from `@/lib/massive/validate-ticker`. **Pre-write verifications already run S240 (all pass):** validateTicker server-component compatible; `MASSIVE_API_KEY` LIVE on disk (length=32, mtime today, AAPL probe HTTP 200); Next 16 docs locked except Q4-revisited.
+
+4. **Post-write verification (5 checks).** `pnpm dev` running → visit `/tickers/NVDA` → shell renders "Ticker: NVDA"; `curl -I http://localhost:3000/tickers/nvda` → HTTP 308 + `Location: /tickers/NVDA`; `/tickers/ZZZZZ` → renders not-found.tsx (UI 404 — Next streams responses default to HTTP 200, not-found.tsx render is the verification axis); `pnpm test` → 6/6 still pass; `pnpm exec tsc --noEmit` clean. Apply 80–85% calibration haircut on "step 2 complete" claims — verify file state via `git status` / `git log` before reporting.
+
+5. **Open PR-C as DRAFT after step-2 commit.** `git push -u origin ths-6-ticker-detail-page` → `gh pr create --draft --base main --head ths-6-ticker-detail-page`. Vercel preview URL surfaces in PR body. Linked to THS-6 in Linear. **Step 3 = TickerHeader + PriceBlock + tab strip introduction.** Awaits Terry's eyeball preview at `/tickers/NVDA` + explicit go before kicking off step 3. PR stays DRAFT until step N.
 
 ---
 
@@ -31,7 +35,11 @@
 ## Current repo state
 
 ```
-main:                   909e49b — feat(fmp): rebuild getKeyMetrics against /stable/ surface (#9) [squash 2026-05-02]
+main:                   75613fb — refactor: move ConvictionBadge to components/ui/ shared primitive (#11) [squash 2026-05-02 S240]
+                            ├─ 4554e85 — chore: add vitest + testing-library + jsdom unit-test infra (#10) [squash 2026-05-02 S240]
+                            ├─ 43c95dc — docs: closeout S239 — PR #9 merge + BRK.B probe A bucket + metadata refresh
+                            ├─ 39c7d55 — docs: refresh HANDOFF + PROGRESS metadata to 909e49b post-PR #9 merge
+                            ├─ 909e49b — feat(fmp): rebuild getKeyMetrics against /stable/ surface (#9) [squash 2026-05-02]
                             ├─ ea5cb5a — docs: closeout S237 — FMP /stable/ rebuild + THS-6 spec lock + NET decision A [direct, S237 2026-05-02]
                             ├─ 7f35d25 — docs: lock THS-6 spec carry-forward + S237 FMP coverage gaps [direct, S237 2026-05-02]
                             ├─ bd095bf — docs: HANDOFF closeout — session metadata + NEXT TASKS + Continuation note
@@ -40,19 +48,22 @@ main:                   909e49b — feat(fmp): rebuild getKeyMetrics against /st
                             ├─ 00bb968 — THS-DS-1: Re-anchor design system to Basis canon (#7) [squash 2026-05-01]
                             ├─ 9558829 — docs: HANDOFF/PROGRESS — THS-5 closeout, Step 11, Q-STORAGE U lock
                             ├─ 9a84e42 — THS-5: Watchlist CRUD with live Massive ticker validation (#6) [squash 2026-04-30]
-                            ├─ 6258126 — docs: closeout S220 — THS-5 PR #6 parked, file-state-wins rule locked
-                            ├─ a1c4db0 — fix(ui): rounded-md radius on command palette (#5)
-                            ├─ ... (THS-1 through THS-4 + earlier docs commits)
+                            ├─ ... (S220 docs + PR #5 + THS-1 through THS-4)
 
+chore/vitest-setup:              DELETED on origin (squash-merged PR #10 → main at 4554e85 2026-05-02 S240)
+refactor/conviction-badge-to-ui: DELETED on origin (squash-merged PR #11 → main at 75613fb 2026-05-02 S240)
 ths-6-fmp-stable-rebuild:        DELETED on origin (squash-merged PR #9 → main at 909e49b 2026-05-02)
 ths-5-watchlist:                 DELETED on origin (squash-merged PR #6 → main)
 ths-ds-1-design-system-reanchor: DELETED on origin (squash-merged PR #7 → main)
 ths-6-prep-data-clients:         DELETED on origin (squash-merged PR #8 → main)
+ths-6-ticker-detail-page:        NOT YET CREATED (deferred until Q4-revisited error.tsx signature locks)
 
 Open Linear tickets:
+- THS-18 — Fix react-hooks/incompatible-library lint error on watchlist-table.tsx (Backlog, Low; pre-existing, surfaced during S240 PR #10 verification; do not block PR work on it; resolution paths: TanStack escape hatch / per-line disable / rule downgrade — pick at ticket pickup, not now)
+- THS-17 — Vitest unit-test infrastructure (Done 2026-05-02, retroactive for PR #10 squash at 4554e85; see Linear for full scope)
 - THS-15 — default-watchlist atomicity hardening (Backlog, Medium, Codex P1 deferral from PR #6)
 - THS-7  — Single-agent research (Todo, Urgent, has appended AC for last-research completed_at filter)
-- THS-6  — Ticker detail page (Todo, High; lib infrastructure prep shipped via PR #8 + rebuilt for /stable/ via PR #9 squash-merged at 909e49b 2026-05-02; BRK.B form probe RESOLVED — A bucket; page work resumes when scaffold proposal cycle opens — preconditions ALL CLEARED, awaits Terry's go)
+- THS-6  — Ticker detail page (Todo, High; lib infra shipped via PR #8 + rebuilt /stable/ via PR #9; ConvictionBadge promoted to components/ui/ via PR #11; vitest infra via PR #10. PR-C step 2 = route shell scaffold pending Q4-revisited error.tsx signature lock)
 - THS-16 — THS-DS-1 design system re-anchor (Done 2026-05-01, squashed at 00bb968)
 ```
 
@@ -390,7 +401,7 @@ Perplexity Checkpoint #1 ✅ CLEARED.
 11. **TypeScript installed at 5.9.3** (resolved from `^5`). Satisfies "NOT 6". Leave it.
 12. **JetBrains Mono replaces Geist Mono** for numerics — permanent per DESIGN_SPEC §3.
 13. **Vercel env vars are empty.** Don't pre-populate placeholders.
-14. **Local `.env.local` IS populated.** Has Supabase URL, anon key, service-role key, EDGAR_USER_AGENT, **`MASSIVE_API_KEY` (chat-pasted, server-side invalidated as of S220 close per Terry — rotation NOT yet reflected on disk)**. Other API keys deferred to their tickets.
+14. **Local `.env.local` IS populated.** Has Supabase URL, anon key, service-role key, EDGAR_USER_AGENT, **`MASSIVE_API_KEY` (LIVE 2026-05-02 S240 — length=32, mtime `2026-05-02 00:54:21`, AAPL probe HTTP 200 returned valid Apple Inc. payload; rotation IS reflected on disk; prior wording about "rotation NOT yet reflected" was stale through S239 — file-state-wins applied this session, key works end-to-end)**, **`FMP_API_KEY` (LIVE — rotated S237, length=33, three helper-based probes PASS S237 against `/stable/key-metrics` + `/stable/ratios`)**. Other API keys deferred to their tickets.
 15. **Fontera Supabase is Terry's catch-all SQL paste destination.** Never paste THS-N migrations there.
 16. **shadcn 4.x uses `@base-ui/react`** instead of `@radix-ui/react-*`.
 17. **shadcn 4.x style is `base-nova`.** Generated components include `dark:` Tailwind variants — site needs `.dark` class on `<html>` for those to fire. Currently we don't apply `.dark`.
@@ -403,8 +414,14 @@ Perplexity Checkpoint #1 ✅ CLEARED.
 24. **Verification rigor: render = built, functional = exercised.** Don't conflate. Every interactive surface (palette, dialog, form, dropdown) gets keystroke-tested before "verification clean."
 25. **RHF + uncontrolled `type="number"` inputs don't reset to `undefined` reliably.** Use controlled `useState<string>` instead, parse on submit. (Surfaced THS-5 add-ticker dialog target price persistence bug.)
 26. **`tickers` and `companies` are public-read tables with service-role-only writes.** Use `lib/supabase/admin.ts` for INSERT operations against either table. RLS-bound client cannot insert rows there.
-27. **FMP module compiles + lints but is NOT runtime-verified.** `lib/fmp/key-metrics.ts` shipped via PR #8 with conservative typing (10 high-confidence canonical fields). `tsc --noEmit` clean and `eslint` clean. **However:** `FMP_API_KEY` is empty in `.env.local` pending Q-FMP-KEY rotation, so `fetchKeyMetrics()` throws `"FMP_API_KEY is not set"` on first invocation. Don't let next session assume the module is verified end-to-end. Live shape verification (and any field-name additions for ambiguous metrics like roe vs returnOnEquity, freeCashFlowYield vs freeCashFlowPerShare, evToEbitda vs enterpriseValueOverEBITDA) waits until rotation lands.
+27. ~~**FMP module compiles + lints but is NOT runtime-verified.**~~ **RESOLVED S237/S239.** `lib/fmp/key-metrics.ts` rebuilt against `/stable/` surface (path → query param), shipped via PR #9 squash-merged at `909e49b`. `FMP_API_KEY` rotated to `.env.local`, three helper-based probes PASS (NVDA limit=1 / NVDA limit=5 / ZZZZZZ → `FMPSymbolNotCoveredError`). Coverage probe across 10-ticker watchlist locked: NVDA / MSFT / INTC / PYPL / VZ = OK, SPY = OK 0 periods (ETF), NET / BRK-B / QQQ / MDB = `FMPSymbolNotCoveredError`. NET decision A LOCKED — Phase 1 acceptance modified to "FMP fundamentals where covered."
 28. **`source .env.local` chokes on multi-word values.** `set -a; source .env.local; set +a` errors on line 27 with `command not found: Terry` — likely an unquoted `EDGAR_USER_AGENT=Terry Turner ...` value. Standard issue with sourcing .env files in shell when values contain spaces. Doesn't block individual key extraction (`grep ^MASSIVE_API_KEY ... | cut -d= -f2-`); does block bulk env loading. Fix: quote multi-word values in `.env.local`.
+
+29. **vitest 4.x uses `oxc` as default transformer (NOT esbuild)** — surfaced S240 PR #10. `esbuild: { jsx: "automatic" }` config blocks are both runtime-ignored AND `tsc --noEmit` type errors (`Object literal may only specify known properties, and 'jsx' does not exist in type 'ESBuildOptions'`). Drop the esbuild block entirely; oxc handles JSX/TSX automatically without configuration. If JSX control is genuinely needed, configure under the oxc adapter, not esbuild.
+
+30. **Next 16 v16.2.0 added `unstable_retry` prop to error.tsx, recommended over legacy `reset`** — surfaced S240 PR-C step 2 pre-write doc-read. `reset` still exists but the docs explicitly say "in most cases, you should use `unstable_retry()` instead." Behavioral diff: `unstable_retry()` re-fetches AND re-renders the error boundary's children (useful for transient API failures); `reset()` only re-renders without re-fetching. For pages that consume external APIs (Massive validateTicker, FMP fetches), `unstable_retry` is the genuinely useful choice. Q4-revisited locked at the gate: pick `unstable_retry` (a) / `reset` (b) / both (c) before scaffolding `error.tsx` files in any new route.
+
+31. **Pre-existing `react-hooks/incompatible-library` lint failure on `components/watchlist/watchlist-table.tsx:223`** — TanStack `useReactTable()` flagged by eslint-config-next 16's new rule because the API returns functions that cannot be memoized safely under React Compiler. Verified pre-existing via `git stash --include-untracked && pnpm lint && git stash pop` on PR #10 ship. Tracked as **THS-18 (Backlog, Low)**. Resolution paths (pick at ticket pickup, NOT during unrelated PR work): (a) wrap `useReactTable` per TanStack's escape hatch, (b) per-line `eslint-disable` with documented justification, (c) downgrade rule to `warn` workspace-wide. Do not block unrelated PRs on this — `pnpm lint` will continue to fail on main until THS-18 ships.
 
 ## Vercel state (live)
 
@@ -423,12 +440,20 @@ Perplexity Checkpoint #1 ✅ CLEARED.
 
 ## Memory rules touched this session
 
-- **NEW (S237):** `feedback_probe_before_typing.md` — When typing a third-party API client response shape, run a live probe FIRST. Documented field names lie. Cross-project. Born from FMP /stable/ rebuild surfacing 4 silent field renames + `evToEBITDA` capitalization no-doc-variant + `period` value-format flip + bad-ticker 402+symbol-language behavior — all undocumented, all caught only via probe. Indexed in MEMORY.md.
-- **VERIFIED PERSISTED (S237):** `feedback_handoff_metadata_staleness.md` — ran exactly as designed at session open (HANDOFF said HEAD `9b204e0`, actual `bd095bf` — surfaced + queued for fix as item 5).
-- **VERIFIED PERSISTED (S237):** `feedback_verify_claimed_state.md` — ran when Terry's HANDOFF Task 2 said line 23 for FMP_API_KEY but file showed line 24; file won; targeted by prefix-match instead of line number. No leakage.
-- **VERIFIED PERSISTED (S237):** `feedback_no_assumptions.md` — applied repeatedly: project-pivot pre-action stop (basis-forecast misroute), tab-on-nonexistent-page stop (THS-6 spec lock came in as if page existed), commit strategy ask before publish.
-- **VERIFIED PERSISTED (S237):** `feedback_audit_before_fork.md` — applied when updating carry-forward block (designed-for-this artifact won; updated existing items 5-8 in place rather than appending parallel items).
-- **VERIFIED PERSISTED (S237):** `feedback_engine_wins_sequencing.md` — applied when surfacing why THS-6 spec lock was documentation-only (engine work resolves before page scaffold; lib/fmp had open questions that gate page rendering).
+- **VERIFIED PERSISTED (S240):** `feedback_handoff_metadata_staleness.md` — ran at session open: confirmed HEAD = origin/main = `43c95dc` matched HANDOFF Status block top text (note: HANDOFF "Current repo state" visualization block listed `main: 909e49b` as stale, surfaced as non-blocking; folded into this S240 closeout refresh).
+- **VERIFIED PERSISTED (S240):** `feedback_verify_claimed_state.md` — applied to gotcha #14 (`MASSIVE_API_KEY` "rotation NOT yet reflected on disk"). File state + length + mtime + live AAPL probe (HTTP 200) won; gotcha wording rewritten to LIVE.
+- **VERIFIED PERSISTED (S240):** `feedback_audit_before_fork.md` — applied when carry-forward item 12 ("extract from inline Tailwind") contradicted `components/watchlist/conviction-badge.tsx` already existing on disk. Audited the existing artifact, surfaced the staleness, completed the move to `components/ui/` rather than re-extracting.
+- **VERIFIED PERSISTED (S240):** `feedback_no_assumptions.md` — applied throughout: refused PR-B merge before Terry's "merge it" signal (despite locked sequence implying merge); held PR-C scaffolding on Q4-revisited surprise; surfaced screenshot verification gap (path b/c) for PR-B rather than picking; surfaced 5 GN-gaps before any code; held merge ownership distinction (Terry verifies, Claude executes `gh pr merge`).
+- **VERIFIED PERSISTED (S240):** `feedback_skill_load_vs_invoke.md` — `commit-commands:commit-push-pr` skill loader errored on cwd `/Users/terryturner` (not a git repo); did not retry or treat its terminal "you MUST" as binding; fell back to raw `gh pr create` recipe per system prompt.
+- **VERIFIED PERSISTED (S240):** `feedback_probe_before_typing.md` extended to **doc-read before file creation**. Pre-write Next 16 docs read surfaced v16.2.0 `unstable_retry` prop addition — Q4 escape triggered, scaffolding held. Pattern: when the API surface is your own framework's special files (error.tsx etc.), read the version-pinned local docs in `node_modules/next/dist/docs/` BEFORE writing the file. Same logic as live-probing third-party APIs.
+- **VERIFIED PERSISTED (S240):** `feedback_formatter_in_scope.md` — prettier reformatted ~8 cosmetic hunks on `watchlist-table.tsx` during PR #11 ship (file was already in scope from the import path + prop name edits). Shipped without force-push surgery; surfaced in PR body.
+- **VERIFIED PERSISTED (S240):** `feedback_codex_never_gates_merge.md` — PR #10 + PR #11 both merged on Terry's explicit "merge it" signal only. Codex not engaged on either.
+- **VERIFIED PERSISTED (S240):** `feedback_single_purpose_cleanup_commits.md` — vitest infra (PR #10) shipped its own PR despite being prep for PR #11; conviction-badge move (PR #11) scoped without bundling THS-6 page work.
+- **VERIFIED PERSISTED (S240):** `feedback_session_tag_when_shipped.md` — both PR #10 + PR #11 commit messages tagged `Session: S240_05.02.2026` (the shipping session, not whichever session the plan was authored in).
+- **VERIFIED PERSISTED (S240):** `feedback_minimize_friction.md` — Linear ticket creation for THS-17 (retroactive infra) + THS-18 (lint failure) bundled in one parallel batch via Linear MCP; Terry didn't have to file them separately.
+- **NEW (S237):** `feedback_probe_before_typing.md` — When typing a third-party API client response shape, run a live probe FIRST. Documented field names lie. Cross-project.
+- **VERIFIED PERSISTED (S237):** `feedback_handoff_metadata_staleness.md` — ran exactly as designed at session open (HANDOFF said HEAD `9b204e0`, actual `bd095bf`).
+- **VERIFIED PERSISTED (S237):** `feedback_verify_claimed_state.md` / `feedback_no_assumptions.md` / `feedback_audit_before_fork.md` / `feedback_engine_wins_sequencing.md` — all applied this session to spec lock work.
 
 ## Carry-forward — THS-6 Q-lock status (surface to Terry at THS-6 start)
 
@@ -463,10 +488,62 @@ External-API gates, UX choices, and design principles for THS-6. Items 1-4 (Q-lo
 Per Terry's queued sequence (S237):
 1. ☑ Run 3 FMP helper verifications (NVDA limit=1, NVDA limit=5, ZZZZZZ → FMPSymbolNotCoveredError) — **ALL PASS S237 2026-05-02**
 2. ☑ Commit lib/fmp/ rebuild — **PR #9 squash-merged to main at `909e49b` 2026-05-02 (S239)** (Codex NOT engaged per carry-forward rule)
-3. ☑ Resolve NET coverage decision — **A LOCKED 2026-05-02 (S237)**: accept the gap; Phase 1 acceptance criterion modified to "Ticker detail loads real data — Massive chart + FMP fundamentals where covered." UI graceful "not available on current data plan" surface for `FMPSymbolNotCoveredError` (NET / QQQ / MDB; BRK-B pending item 4 result).
-4. ☑ Run BRK-B curl probe — DONE 2026-05-02 (S239). Both `/stable/key-metrics` and `/stable/ratios` returned HTTP 402 + symbol-not-covered body for `?symbol=BRK.B`. Resolution: A bucket; no transform layer needed. Q-STORAGE U stands.
-5. ☑ Fix HANDOFF.md staleness — THIS COMMIT 2026-05-02 (S239). Refreshed HANDOFF + PROGRESS to current `origin/main` = `909e49b` post-PR #9 merge.
-6. ☐ Open THS-6 scaffold creative-build proposal (sections 1-6 per hard-gate); items 11 + 12 above are line items inside that proposal, NOT pre-approved scope. Scaffold scope must include graceful UI for `FMPSymbolNotCoveredError` cases per NET decision A.
+3. ☑ Resolve NET coverage decision — **A LOCKED 2026-05-02 (S237)**: accept the gap; Phase 1 acceptance criterion modified to "Ticker detail loads real data — Massive chart + FMP fundamentals where covered."
+4. ☑ Run BRK-B curl probe — DONE 2026-05-02 (S239). A bucket; no transform layer needed. Q-STORAGE U stands.
+5. ☑ Fix HANDOFF.md staleness — DONE 2026-05-02 (S239). Visualization-block staleness re-surfaced S240, folded into THIS closeout refresh.
+6. ☑ **Open THS-6 scaffold creative-build proposal** — DONE 2026-05-02 (S240). Sections (1)–(6) drafted; **all 14 G + 5 GN + 4 Q (route-shell pre-impl) gaps locked** with rationale captured. Two precursor PRs shipped: PR #10 vitest infra (`4554e85`), PR #11 ConvictionBadge → ui/ (`75613fb`). PR-C step 2 (route shell) pending Q4-revisited error.tsx signature lock (`unstable_retry` vs `reset` vs both).
+
+### S240 G/GN/Q lock summary (all decisions Terry locked at this session's gates)
+
+**G-locks** (creative-build proposal section 5 gaps):
+- G1: Phase 1 always-empty for Thesis tab (data shape = deferred ticket).
+- G2: Research History sub-line = `"~3 min"` only (cost dropped Phase 1 — no telemetry, hardcoded $X.XX is fake precision; cost gets baked back in after first 5 research runs).
+- G3: Locked via item 9 carry-forward (no separate lock needed).
+- G4: Empty-state CTAs ENABLE the action, wire to real endpoint, return 404 → neutral sonner toast on 404. Pattern: hide-don't-narrate applies to SURFACES, not ACTIONS. Enabled-with-graceful-404 ages better than disabled+tooltip or stubbed+"coming soon."
+- G5: `/tickers/[symbol]` opens for ANY valid Massive symbol. Latest research block hides naturally when no memo exists.
+- G6: Conviction badge bare numeric format — REVERSED in GN2; final lock = `9/10` format.
+- G7: Overview Fundamentals snapshot fields = **Market Cap / P/E (TTM) / FCF Yield / Net Debt / EBITDA**. **NOT D/E** — Net Debt / EBITDA is the institutional leverage metric; D/E is retail-grade.
+- G8: Full Fundamentals tab default = 5 FYs descending.
+- G9: Chart linear-only Phase 1, no volume. Log toggle deferred to Phase 2.
+- G10: URL contract = omit `?tab=` param on default. `/tickers/NVDA` = Overview canonical.
+- G11: Market session pill = static NYSE holiday JSON at `lib/market/calendar.ts`. Annual refresh.
+- G12: Coverage-gap card copy = `"Fundamentals not available for {SYMBOL}"` headline + `"Coverage varies by ticker on the configured data provider."` sub-line. **No link, no upsell.** Single-user product, no upsell flow exists.
+- G13: `generateMetadata` = minimal title-only, format `${symbol} — ${companyName} — Thesis`.
+- G14: Tab-switch loading = stay-then-swap via `useTransition`.
+
+**GN-locks** (recon surprises):
+- GN1: ConvictionBadge moves to `components/ui/` (existing was at `components/watchlist/`). Single import site updated. **Shipped via PR #11.**
+- GN2: REVERSES G6. Display format = `9/10` stays. Rationale: shipped implementations don't get overridden by pattern-match minimalism rationale; denominator carries semantic value in non-tabular contexts; `/honesty` applied (don't dig in when wrong).
+- GN3: Prop = `score: number | null`. Null fallback (renders `—`) stays inside the component. Defensive null beats lifting to call-site when null is a real domain state.
+- GN4: 7-8 ramp keeps `text-success/90` (text opacity at 90% on `bg-success-soft`). 9-10 = `text-success` full saturation. Subtle band differentiation is intentional.
+- GN5: vitest infra rides its own PR (PR #10), separate from the conviction-badge work (PR #11). Single-purpose-cleanup-commits applied.
+
+**Q-locks** (PR-C step 2 route-shell pre-impl):
+- Q1: `app/(app)/tickers/[symbol]/` inside auth-walled route group.
+- Q2: Step-2 placeholder = literal `<main>Ticker: {symbol.toUpperCase()}</main>`. Defensive interpolation despite redirect guarantee.
+- Q3: Draft PR opens at step 2, accumulates commits step-by-step, marks Ready at step N, single squash-merge. THS-N audit traceability preserved by one-PR-per-ticket; preview surface preserved by draft-PR-with-accumulating-commits.
+- Q4: Trust doc-read; surface only on Next 16 surprise.
+- **Q4-revisited (PENDING):** Next 16 v16.2.0 `unstable_retry` doc surprise surfaced at the gate — pick (a) `unstable_retry` / (b) `reset` / (c) both before any error.tsx scaffolding.
+
+### S240 G/GN/Q rationale digest (durable — surface in future sessions)
+
+- **Phase 1 = always-empty for state-machine-backed surfaces** (Thesis, eventually Memos for tickers without research). Tab is structural; data shape ships with the state-machine ticket. Don't pre-design a data model the spec hasn't authored.
+- **Empty-state CTA posture: ENABLE the CTA, wire to the real endpoint, 404 → neutral toast.** Hide-don't-narrate is for unbuilt SURFACES, not unbuilt ACTIONS. Actions enabled with graceful failure age better than disabled+tooltip or stubbed+"coming soon."
+- **Honesty over format: cost number in Research History sub-line is OVERRIDDEN to time-only Phase 1** (`"~3 min"`) because zero telemetry. Hardcoded cost = fake precision. After first 5 research runs, real cost gets baked back into the format.
+- **Coverage-gap copy: zero language that gestures at upsell, upgrade, or plan change.** Single-user product. No upsell flow exists. Copy must reflect that.
+- **Conviction badge: bare numeric was wrong; `9/10` keeps semantic value in non-tabular contexts.** Shipped implementations don't get overridden by pattern-match rationale.
+- **Net Debt / EBITDA, NOT D/E.** Institutional leverage metric. Watchlist audience is research-grade.
+- **Symbol routing: open for any valid Massive symbol.** Watchlist-relationship gates are emergent (Latest research block hides without a memo), not architectural.
+- **Component location: `components/ui/` for primitives that ship across feature surfaces.** `components/watchlist/` for components scoped to the watchlist feature. Future shared components follow this rule.
+- **Null handling at the component level when null is a real domain state.** Lifting to call-site is correct only when null is impossible by contract.
+- **Test scope calibration: tests proportional to component complexity.** Trivially-correct components earn one table-driven test, not a full RTL suite. Reserve multi-case suites for components with real state, edge cases, user interaction, or product logic. The vitest infra earns its keep across THS-7+, not on the badge specifically.
+- **Visual-delta verification on refactor commits = human eyeball, not unit-test-only.** Tailwind class strings can match while rendered DOM differs. Open the surface in browser, look at it, compare. 30 seconds. Cheaper and more reliable than authed-fixture builds for trivial-component refactors.
+- **Branch identity is irrelevant to the pre-impl gate.** The gate exists to lock intent before code is written, not after a branch is cut. Pre-impl notes can be drafted in parallel with verification work.
+- **Merge ownership pattern: Terry verifies, then says "merge it," then Claude executes `gh pr merge`.** Verification and merge are different acts; collapsing them into "Terry merges from his terminal" loses the explicit go-signal.
+- **One PR per Linear ticket is hygiene.** Draft-PR-with-accumulating-commits preserves the audit traceability AND the preview surface needed for verification gates. PR-per-step would shatter THS-N traceability.
+- **Pre-impl gate exists to surface unknowns, not catalog knowns.** Surface a doc signature only when reading it produces a surprise.
+- **Pre-existing lint failures get tracked, not ignored.** Discipline of "did I introduce this?" via git stash verification is correct. Once verified pre-existing, the failure becomes its own work item (THS-18), not background noise.
+- **Infra commits without Linear tickets violate Phase 1 audit-log discipline.** Single-purpose-cleanup is a commit convention, not a Linear-bypass convention. Retroactive ticket creation (THS-17) is fine; no ticket is not.
 
 ## Onboarding packet for parallel Claude Chat
 
@@ -476,4 +553,4 @@ Per Terry's queued sequence (S237):
 
 ## Continuation note for Terry to paste to next Claude
 
-> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full session context, file paths, and the NEXT 3-5 TASKS block. Main HEAD = S239 closeout commit on top of `39c7d55` (S239 HANDOFF/PROGRESS metadata refresh) > `909e49b` (PR #9 squash-merged 2026-05-02 — `feat(fmp): rebuild getKeyMetrics against /stable/ surface`) > `ea5cb5a` (S237 closeout). PR #9 MERGED. NET coverage decision = A LOCKED. BRK.B form probe RESOLVED 2026-05-02 (S239): A bucket — both `/stable/key-metrics` and `/stable/ratios` return HTTP 402 + symbol-not-covered for `?symbol=BRK.B`; no transform layer needed; same gap class as NET / QQQ / MDB. THS-6 spec lock recorded in HANDOFF carry-forward (items 5-13 + design principles a-d). 13 carry-forward items + 4 design principles + 6-step scaffold-cycle preconditions checklist — items 1-5 ALL CLEARED, item 6 (open THS-6 scaffold creative-build proposal cycle) awaits Terry's explicit go. Run SESSION-STARTUP SANITY CHECKS, then ASK Terry how to proceed — do not auto-assign per `feedback_no_task_assignment.md`.**
+> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full session context, file paths, and the NEXT 3-5 TASKS block. Main HEAD = S240 closeout commit on top of `75613fb` (PR #11 squash-merge 2026-05-02 — `refactor: move ConvictionBadge to components/ui/ shared primitive`) > `4554e85` (PR #10 squash-merge 2026-05-02 — `chore: add vitest + testing-library + jsdom unit-test infra`) > `43c95dc` (S239 closeout). S240 opened the THS-6 scaffold creative-build proposal cycle and locked **all 14 G + 5 GN + 4 Q gaps** across the cycle (durable rationale digest in HANDOFF carry-forward "S240 G/GN/Q rationale digest" section — read it before any THS-6 work). Two PRs shipped: PR #10 (vitest infra) + PR #11 (ConvictionBadge → ui/). PR-C step 2 (route shell) HELD on **Q4-revisited**: Next 16 v16.2.0 added `unstable_retry` prop to error.tsx (recommended over legacy `reset`) — three options surfaced, awaiting Terry's A/B/C lock before any scaffolding. Pre-write verifications already done S240 (validateTicker server-component compatible; MASSIVE_API_KEY LIVE on disk per AAPL probe HTTP 200 — gotcha #14 wording was stale; Next 16 docs locked except Q4-revisited). Two new Linear tickets: THS-17 (Done, vitest infra retroactive) + THS-18 (Backlog Low, pre-existing lint failure on `watchlist-table.tsx:223`). Run SESSION-STARTUP SANITY CHECKS, then ASK Terry for the Q4-revisited lock — do not auto-assign per `feedback_no_task_assignment.md`.**

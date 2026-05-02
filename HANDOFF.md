@@ -209,6 +209,19 @@ Symbol uppercased pre-fetch. `404 → { valid: false }`. `results.active === fal
 
 Generalized rule: when boundaries are symmetric (one transform needed either way), pick the form that matches user expectation + UI convention. Storage form is for humans first, machines second.
 
+### Token source-of-truth files travel together (LOCKED 2026-05-01 — THS-DS-1, Linear THS-16)
+
+Whenever `docs/design/thesis-design-system.css` changes, every served-token surface re-anchors in the same PR:
+
+- `app/globals.css` (`@theme` block + `:root` shadcn bridge)
+- `docs/design/DESIGN_SPEC.md` `@theme` block
+- Any `tailwind.config.*` token references
+- Any page that hardcodes hex for display (e.g. `app/(app)/tokens/page.tsx` swatches)
+
+No staggered token migrations across PRs. Hex-leak grep across `app/`, `components/`, `lib/` must return zero before PR opens. This rule applies to every future design-system change, not just THS-DS-1.
+
+Codified: 2026-05-01 in THS-DS-1 closeout (Linear THS-16).
+
 ### Q5 isolate — LOCKED 2026-04-30 (DESIGN_SPEC §5.5 read confirmed)
 
 Watchlist data layer (`lib/watchlist/queries.ts` + `actions.ts`) stays separate from Dashboard `WatchlistSummary` (DESIGN_SPEC §5.5). §5.5 read confirmed: pure visual/layout spec for a dashboard widget — does NOT define a shared types contract, shared query helpers, or shared normalization. The §5.5 widget and the §G.2 standalone `/watchlist` page have different column sets (§5.5 = trigger proximity / sparkline / reco / conviction-mini / age; §G.2 = symbol+name / conviction / target / sector / memo status / last research). YAGNI on shared abstractions until 2+ concrete consumers materialize. Share schema only (`watchlist_tickers` + joins).

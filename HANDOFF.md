@@ -278,13 +278,15 @@ Already documented in §2 of SESSION-STARTUP SANITY CHECKS. Mirrored from `cc342
 
 `docs/design/DESIGN_SPEC.md` is the source of truth. Read before any UI work.
 
-**Tokens (LOCKED):**
-- bg `#0A0B0E` (canvas + sidebar merged into single plane)
-- surface `#14161B` · surface-2 `#1A1D24` · surface-hover `#1F232B`
-- border `#232730` · border-subtle `#1A1D24`
-- text-1 `#F0F1F3` · text-2 `#9298A3` · text-3 `#5F6571`
-- accent `#4D5BFF` · accent-soft `rgba(77,91,255,.12)` · accent-hover `#6573FF`
-- success `#4FB87A` · warning `#DDA84F` · danger `#E26B6B` · info `#5B8FFF` (each with `*-soft` 12% alpha)
+**Tokens (LOCKED — v2.0, Basis canon re-anchor 2026-05-01, THS-DS-1):**
+- bg `#0B0C0F` (page canvas, topbar, table headers) · sidebar `#06070A` (distinct from canvas — Basis S61 lock)
+- surface `#15171C` · surface-2 `#1B1E25` · surface-elevated `#22262E` (overlays/modals/tooltips/dropdowns) · surface-hover `#232730`
+- border `#2A2F38` · border-subtle `#1F2229`
+- intra-card divider system (three-tier): border-06 `rgba(255,255,255,0.06)` · border-08 `rgba(255,255,255,0.08)` · border-12 `rgba(255,255,255,0.12)`
+- text-1 `#ECEDEF` · text-2 `#CFD3DA` (BRIGHTER — Linear bright-in-dark) · text-3 `#7A818D`
+- accent `#4D5BFF` · accent-soft `rgba(77,91,255,.10)` · accent-hover `#6573FF` (Cypher Indigo — UNCHANGED)
+- success `#30A46C` · warning `#F5A524` · danger `#E5484D` · info `#8B5CF6` (HUE SHIFT: blue → violet) — each with `*-soft` 12% alpha (Q13 GOLD STANDARD saturated palette)
+- score-amber `#FCD34D` (score numbers <50, distinct from `--warning` to avoid same-row sync)
 
 **Brand:** "AI Thesis" wordmark + "Investment OS" product label.
 **Macro strip (curated 8):** SPX · NDX · RUT · VIX · US10Y · DXY · WTI · GOLD.

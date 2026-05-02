@@ -79,7 +79,8 @@ Per Linear team **Thesis**, project **Phase 1 — MVP**, blueprint Section I.14 
 **Carrying forward — THS-6 next (post-S239 merge sequence):**
 - PR #9 squash-merged to main at `909e49b` 2026-05-02 (S239). Codex NOT engaged per durable rule.
 - BRK.B single-curl probe RESOLVED S239: both `/stable/key-metrics` and `/stable/ratios` returned HTTP 402 + symbol-not-covered body for `?symbol=BRK.B`. A bucket — no transform layer needed; same gap class as NET / QQQ / MDB. Q-STORAGE U stands.
-- HANDOFF + PROGRESS metadata refresh — THIS COMMIT 2026-05-02 (S239). Direct-to-main per doc-code split rule.
+- HANDOFF + PROGRESS metadata refresh committed at `39c7d55` 2026-05-02 (S239). Direct-to-main per doc-code split rule.
+- S239 closeout (this commit) refreshes HANDOFF top "Status at close" + NEXT 3-5 TASKS + Continuation note for next session.
 - THS-6 scaffold creative-build proposal cycle (sections 1-6) — preconditions 1-5 ALL CLEARED, awaits Terry's go. Scaffold scope must include graceful UI for `FMPSymbolNotCoveredError` per NET decision A (NET / BRK-B / QQQ / MDB).
 
 **Key gotchas surfaced this session:**

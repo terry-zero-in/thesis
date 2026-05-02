@@ -1,30 +1,22 @@
 # Thesis — Session Handoff
 
-**Session date:** 2026-04-30 (continued from earlier 2026-04-29)
-**Closing Claude:** Code #227_04.29.2026 (16-042926), row `7c2b8f14-a048-4bb9-b389-7057b2f70287`
-**Status at close:** THS-1 through THS-5 merged on `main` (HEAD `9a84e42`). **THS-5 squash-merged via PR #6 at `9a84e42`** 2026-04-30 — Watchlist CRUD + live Massive ticker validation. Linear THS-5 → Done. Mid-session: `.env.local:23` rotation completed (file-state-wins gate cleared), live Massive client wired, Q-STORAGE U + Q-NORMALIZATION B locked, FMP convention verified (hyphen). Two follow-up tickets opened from Codex deferrals: **THS-15** (default-watchlist atomicity, P1) Backlog, and **THS-7 AC appended** (last-research filter on completed_at) Todo.
+**Session date:** 2026-05-01 → 2026-05-02 (closeout)
+**Closing Claude:** Code #234_05.01.2026 (07-050126), row `cb316730-2bb2-41f9-88fb-95e633a5dbfc`
+**Status at close:** THS-1 through THS-5 + THS-DS-1 (Linear THS-16) + THS-6 prep merged on `main` (HEAD `9b204e0`). **PR #7 squash-merged at `00bb968`** — design system v2.0 live (Basis canon re-anchor). **PR #8 squash-merged at `c72c6f2`** — `lib/fmp/key-metrics.ts` + `lib/massive/aggregates.ts` + `lib/massive/symbols.ts` (helper lift) + `lib/massive/types.ts` + `lib/fmp/types.ts` shipped as THS-6 lib infrastructure prep. Linear THS-16 → Done (manual move via Linear MCP — GitHub auto-integration didn't fire). Linear THS-6 stays Todo (page work is the actual ticket scope). Three Q-locks landed this session: Q-MASSIVE-AGGS, Q-CHART-TIMEFRAMES (5D/1M/3M/1Y/5Y), Q-EXTENDED-HOURS (overlap-tolerant ET hour ∈ [9, 15]). Q-FMP-KEY (Q1) **PENDING** — Terry rotation not yet on disk. Four new durable rules codified below.
 
 ---
 
 ## NEXT 3-5 TASKS (start here)
 
-1. **Sanity checks.** `git fetch --all && git status && gh pr list --state open && supabase status`. Confirm `main` HEAD is `9a84e42` (or newer). No open PRs against thesis at session-start (THS-15 + THS-7 AC are open Linear tickets, not active branches). Via Linear MCP confirm THS-15 = Backlog, THS-7 = Todo (with appended completed_at AC), THS-6 = Todo.
+1. **Sanity check at session start.** `cd /Users/terryturner/Projects/thesis && git fetch --all && git status && gh pr list --state open && git log origin/main --oneline -5`. Confirm `main` HEAD is `9b204e0` (or newer if Terry pushed since). No open PRs expected. Via Linear MCP confirm THS-6 = Todo, THS-15 = Backlog, THS-7 = Todo (with appended completed_at AC), THS-16 = Done. Confirm dev server status: `lsof -ti tcp:3000` — start `npm run dev` if not running.
 
-2. **THS-6 ramp — surface 7 pre-questions before any code.** Read `docs/design/DESIGN_SPEC.md` §6, §6.1, §6.2 + blueprint Section G.3 (Screen 3: Ticker Detail, line 1301) + blueprint Section I.3 MVP scope (line 1833). Then surface to Terry the 7 pre-decisions captured at S221 close (see queue in "Carry-forward — THS-6 pre-questions" section below). Lock answers Q-by-Q before scaffolding.
+2. **Q-FMP-KEY (Q1) gate check.** Run `grep ^FMP_API_KEY /Users/terryturner/Projects/thesis/.env.local | cut -d= -f2- | wc -c`. If output ≤ 2 (newline only = empty key), **rotation has NOT landed** — surface to Terry: "Q1 still pending; FMP work blocked. What's the priority — wait, push Terry to rotate, or work on something else?" If output > 20 (key present), proceed to step 3.
 
-3. **THS-6 external-API gates (do NOT start without).**
-   - **`FMP_API_KEY` rotation** — same disk gate as MASSIVE: Terry generates key at FMP dashboard, pastes into `.env.local`, file-state-wins verify (mtime + key length) before any FMP code lands. FMP convention = hyphen (verified S221, persisted form passes through cleanly).
-   - **Massive aggregates endpoint shape** — verify `/v2/aggs/ticker/{ticker}/range/{multiplier}/{timespan}/{from}/{to}` still works post-rebrand. One-shot AAPL probe at THS-6 start.
+3. **Live FMP probe to lock field names** (after Q1 clears). `KEY=$(grep ^FMP_API_KEY .env.local | cut -d= -f2-) && curl -s "https://financialmodelingprep.com/api/v3/key-metrics/AAPL?period=annual&limit=2&apikey=$KEY" | jq '.[0] | keys'`. Compare returned field names against `lib/fmp/types.ts` `KeyMetric` (10 conservatively-typed fields). Identify ambiguous-field resolutions: `roe` vs `returnOnEquity`, `freeCashFlowYield` vs `freeCashFlowPerShare`, `evToEbitda` vs `enterpriseValueOverEBITDA`. Surface to Terry the actual field names FMP returns; await approval before extending `KeyMetric` (separate single-purpose commit if extended).
 
-4. **THS-6 cut + scaffold (after Q-locks land).** Branch `ths-6-ticker-detail` from `main@9a84e42` (or newer). Linear THS-6 → In Progress. Estimated 4-6 commits, rough order:
-   1. Massive aggregates client (`lib/massive/aggregates.ts` + types)
-   2. FMP client + key-metrics + profile (`lib/fmp/client.ts`, `lib/fmp/key-metrics.ts`, `lib/fmp/profile.ts`)
-   3. `/tickers/[symbol]` server-component scaffold — header strip + tab shell + action bar
-   4. Recharts OHLCV chart (`components/charts/PriceChart.tsx`) + timeframe selector
-   5. Fundamentals panel + Active Triggers stub + tab empty states
-   6. Polish — keyboard shortcuts (R/T/M/Esc), "15m delayed" label, empty states
+4. **Surface remaining 4 UX Q-locks for THS-6 page work.** Read `HANDOFF.md` "Carry-forward — THS-6 Q-lock status" block items 5–8: `15m delayed` label scope, Insider tab deferral, empty tab treatment, Active Triggers panel pre-THS-8. Present Q-by-Q to Terry. Lock answers in HANDOFF before scaffolding the page.
 
-5. **Closeout checklist on THS-6 ship.** Squash-merge PR → Linear THS-6 → Done → docs-only commit on main per Path B (`feedback_doc_code_split.md`). After THS-7 ships, **Perplexity Checkpoint #2** runs (first end-to-end memo).
+5. **Begin THS-6 page scaffold** (only after Q5–Q8 lock + KeyMetric extension if needed). Branch `ths-6-ticker-detail` from `main`. Linear THS-6 → In Progress. Pre-impl note (4-line APPROACH/INPUT/METHOD/REUSE) for `app/(app)/tickers/[symbol]/page.tsx` server component scaffold per blueprint G.3 + DESIGN_SPEC §6.1/§6.2. **Do NOT touch `lib/fmp/` or `lib/massive/`** — those shipped in PR #8 and are the boundary layer. Build order: page scaffold → header strip + tabs → Recharts OHLCV chart consuming `fetchAggregates` → fundamentals panel consuming `fetchKeyMetrics` → polish + keyboard shortcuts + "15m delayed" label.
 
 ---
 
@@ -460,4 +452,4 @@ External-API gates and UX choices for THS-6. Q-locks landed via PR #8 prep sessi
 
 ## Continuation note for Terry to paste to next Claude
 
-> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` (latest docs commit on `main` — `git log --oneline main -- HANDOFF.md`) for full session context, file paths, and the NEXT 3-5 TASKS block. THS-1 through THS-5 are merged on `main` (HEAD `9a84e42`). PR #6 squash-merged 2026-04-30 with live Massive ticker validation + Q-STORAGE U + Q-NORMALIZATION B locked. THS-6 (Ticker detail page) is the next ticket; 7 pre-questions need answering before scaffolding (see "Carry-forward — THS-6 pre-questions" section). Two open Linear tickets from Codex deferrals: THS-15 (default-watchlist atomicity, P1) Backlog, THS-7 has appended AC (last-research completed_at filter, P2) Todo. Run SESSION-STARTUP SANITY CHECKS, then ASK Terry how to proceed — do not auto-assign. Chat-side handoff (Terry's `/thesis-closeout`) is source of truth for Q-lock rationale + decision archaeology + next-ticket strategy. This handoff is source of truth for repo/PR/Linear state + commit SHAs + memory file paths.**
+> **Refer to `HANDOFF.md` and `PROGRESS.md` in `/Users/terryturner/Projects/thesis/` for full session context, file paths, and the NEXT 3-5 TASKS block. Main HEAD is `9b204e0` (docs sync) with `c72c6f2` (PR #8 lib/fmp + lib/massive data clients) and `00bb968` (PR #7 THS-DS-1 design system v2.0) above. THS-6 (Ticker detail page) is the next ticket; **lib infrastructure prep already shipped in PR #8** — do NOT rewrite `lib/fmp/` or `lib/massive/aggregates.ts`. Page work blocked only on Q-FMP-KEY rotation landing on disk. Three Q-locks LOCKED this session (Q-MASSIVE-AGGS, Q-CHART-TIMEFRAMES, Q-EXTENDED-HOURS); 4 UX Q-locks remain (items 5–8 in carry-forward block). Four new durable rules codified in HANDOFF locked-decisions: Codex never gates merge, files-travel-together = token migrations only, external-API alignment prefer overlap-tolerant filters, formatter output on touched files is in-scope. Two open Linear tickets from Codex deferrals: THS-15 (default-watchlist atomicity, P1) Backlog, THS-7 has appended AC (last-research completed_at filter, P2) Todo. Run SESSION-STARTUP SANITY CHECKS, then ASK Terry how to proceed — do not auto-assign.**

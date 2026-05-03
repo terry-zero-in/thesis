@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 
 import { TickerHeader } from "@/components/ticker/header";
 import { PriceBlock } from "@/components/ticker/price-block";
+import { TickerTabs } from "@/components/ticker/tabs";
 import { fetchLatestClose } from "@/lib/massive/latest-close";
 import { validateTicker } from "@/lib/massive/validate-ticker";
 
@@ -49,6 +50,7 @@ export default async function TickerPage({ params }: Props) {
         change={latest.change}
         changePct={latest.changePct}
       />
+      <TickerTabs />
     </>
   );
 }

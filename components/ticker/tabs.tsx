@@ -18,9 +18,13 @@ const TABS = [
 type TabId = (typeof TABS)[number]["id"];
 
 const TRIGGER_CLASSES = cn(
-  "h-9 rounded-none border-0 bg-transparent px-0 text-sm font-medium",
+  // flex-none overrides primitive's flex-1 (which stretches each tab to 1/6
+  // of the row); we want content-width tabs grouped left per Linear pattern.
+  "h-9 flex-none rounded-none border-0 bg-transparent px-0 text-sm font-medium",
   "text-text-3 hover:text-text-2 data-active:text-text-1",
   "data-active:bg-transparent data-active:shadow-none",
+  // Override primitive's after:bottom-[-5px] + after:h-0.5 + after:bg-foreground
+  // for a 1px accent border at the tab's actual bottom edge per spec.
   "after:!bottom-0 after:!h-px after:!bg-accent",
 );
 

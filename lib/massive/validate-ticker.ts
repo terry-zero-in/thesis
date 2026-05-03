@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { normalizeForMassive } from "./symbols";
 
 export type ValidatedTicker = {
@@ -11,7 +13,7 @@ export type ValidatedTicker = {
 
 const SYMBOL_RE = /^[A-Z][A-Z0-9.\-]{0,9}$/;
 
-export async function validateTicker(symbol: string): Promise<ValidatedTicker> {
+export const validateTicker = cache(async (symbol: string): Promise<ValidatedTicker> => {
   const upper = symbol.trim().toUpperCase();
   if (!SYMBOL_RE.test(upper)) return { valid: false };
 
@@ -55,4 +57,4 @@ export async function validateTicker(symbol: string): Promise<ValidatedTicker> {
     marketCap: typeof r.market_cap === "number" ? r.market_cap : undefined,
     logoUrl: r.branding?.logo_url,
   };
-}
+});

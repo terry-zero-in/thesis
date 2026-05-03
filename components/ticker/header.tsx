@@ -1,4 +1,5 @@
 import { getMarketSession, type MarketSession } from "@/lib/market/calendar";
+import { getExchangeLabel } from "@/lib/market/exchange";
 
 const SESSION_CONFIG: Record<
   MarketSession,
@@ -62,8 +63,8 @@ export function TickerHeader({
         <span className="text-sm text-text-2">{name}</span>
       </h1>
       {primaryExchange && (
-        <span className="text-[10.5px] font-medium uppercase tracking-[0.05em] text-text-3">
-          {primaryExchange}
+        <span className="text-[10.5px] font-medium tracking-[0.05em] text-text-3">
+          {getExchangeLabel(primaryExchange)}
         </span>
       )}
       <SessionPill session={session} />

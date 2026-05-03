@@ -24,8 +24,10 @@ const TRIGGER_CLASSES = cn(
   "text-text-3 hover:text-text-2 data-active:text-text-1",
   "data-active:bg-transparent data-active:shadow-none",
   // Override primitive's after:bottom-[-5px] + after:h-0.5 + after:bg-foreground
-  // for a 1px accent border at the tab's actual bottom edge per spec.
-  "after:!bottom-0 after:!h-px after:!bg-accent",
+  // for a 2px accent border at the tab's actual bottom edge.
+  // Thickness is 2px (not 1px) per the codebase's active-state-indicator
+  // floor on dark canvas — 1px reads as structural hairline, not state.
+  "after:!bottom-0 after:!h-0.5 after:!bg-accent",
 );
 
 const PANEL_CLASSES = "px-8 py-6";
